@@ -29,7 +29,7 @@ func TestAdaptParserTurnToModel(t *testing.T) {
 		t.Fatalf("adpt: render: parsed turns is nil\n")
 	}
 
-	at, err := adapters.AdaptParserTurnToModel(pt)
+	at, err := adapters.AdaptParserTurnToModel("<input>", pt)
 	if err != nil {
 		t.Fatalf("adpt: adapt: parser -> model %v\n", err)
 	} else if at == nil {
