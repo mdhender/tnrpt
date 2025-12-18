@@ -111,18 +111,17 @@ type Moves_t struct {
 	// Scouts are optional and move at the end of the turn
 	Scouts []*Scout_t
 
-	// FromHex is the hex the unit starts the move in.
+	// PreviousHex is the hex the unit starts the move in.
 	// This could be "N/A" if the unit was created this turn.
 	// In that case, we will populate it when we know where the unit started.
-	FromHex string
+	PreviousHex string
 
-	// ToHex is the hex is unit ends the movement in.
+	// CurrentHex is the hex is unit ends the movement in.
 	// This should always be set from the turn report.
-	// It might be the same as the FromHex if the unit stays in place or fails to move.
-	ToHex string
+	// It might be the same as the PreviousHex if the unit stays in place or fails to move.
+	CurrentHex string
 
 	Coordinates coords.WorldMapCoord // coordinates of the tile the unit ends the move in
-	Location    coords.Map           // Location is the tile the unit ends the move in
 }
 
 // Move_t represents a single move by a unit.
@@ -149,13 +148,8 @@ type Move_t struct {
 	TurnId     string
 	CurrentHex string
 
-	// warning: we're changing from "location" to "coordinates" for tiles.
-	// this is a breaking change so we're introducing new fields, FromCoordinates and ToCoordinates, to help.
 	FromCoordinates coords.WorldMapCoord // the tile the unit starts the move in
 	ToCoordinates   coords.WorldMapCoord // the tile the unit ends the move in
-
-	// Location is the tile the unit ends the move in
-	Location coords.Map // soon to be replaced with FromCoordinates and ToCoordinates
 
 	// Debug settings
 	Debug struct {
@@ -170,7 +164,6 @@ type Move_t struct {
 type Report_t struct {
 	UnitId UnitId_t // id of the unit that made the report
 
-	Location      coords.Map
 	TurnId        string // turn the report was received
 	ScoutedTurnId string // turn the report was received from a scouting party
 

@@ -85,17 +85,11 @@ func compareMoves(t *testing.T, unitId string, pm *azul.Moves_t, mm *tnrpt.Moves
 	if mm.GoesTo != pm.GoesTo {
 		t.Errorf("Moves[%s].GoesTo: want %q, got %q", unitId, pm.GoesTo, mm.GoesTo)
 	}
-	if mm.FromHex != pm.FromHex {
-		t.Errorf("Moves[%s].FromHex: want %q, got %q", unitId, pm.FromHex, mm.FromHex)
+	if mm.PreviousHex != pm.PreviousHex {
+		t.Errorf("Moves[%s].PreviousHex: want %q, got %q", unitId, pm.PreviousHex, mm.PreviousHex)
 	}
-	if mm.ToHex != pm.ToHex {
-		t.Errorf("Moves[%s].ToHex: want %q, got %q", unitId, pm.ToHex, mm.ToHex)
-	}
-	if mm.Coordinates.String() != pm.Coordinates.String() {
-		t.Errorf("Moves[%s].Coordinates: want %q, got %q", unitId, pm.Coordinates.String(), mm.Coordinates.String())
-	}
-	if mm.Location != pm.Location {
-		t.Errorf("Moves[%s].Location: want %v, got %v", unitId, pm.Location, mm.Location)
+	if mm.CurrentHex != pm.CurrentHex {
+		t.Errorf("Moves[%s].CurrentHex: want %q, got %q", unitId, pm.CurrentHex, mm.CurrentHex)
 	}
 
 	if len(mm.Moves) != len(pm.Moves) {
