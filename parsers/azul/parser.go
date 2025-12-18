@@ -101,7 +101,7 @@ func ParseInput(fid, tid string, input []byte, acceptLoneDash, debugParser, debu
 				log.Printf("%s: %s: %d: location %q\n", fid, unitId, lineNo, location.CurrentHex)
 				return t, fmt.Errorf("current location is obscured")
 			}
-			moves = &Moves_t{TurnId: t.Id, UnitId: unitId, FromHex: location.PreviousHex, ToHex: location.CurrentHex}
+			moves = &Moves_t{TurnId: t.Id, UnitId: unitId, PreviousHex: location.PreviousHex, CurrentHex: location.CurrentHex}
 			t.UnitMoves[moves.UnitId] = moves
 			scriesLinePrefix = []byte(fmt.Sprintf("%s Scry: ", unitId))
 			statusLinePrefix = []byte(fmt.Sprintf("%s Status: ", unitId))
@@ -116,7 +116,7 @@ func ParseInput(fid, tid string, input []byte, acceptLoneDash, debugParser, debu
 				log.Printf("%s: %s: %d: location %q\n", fid, unitId, lineNo, slug(line, 14))
 				return t, fmt.Errorf("duplicate unit in turn")
 			}
-			moves = &Moves_t{TurnId: t.Id, UnitId: unitId, FromHex: location.PreviousHex, ToHex: location.CurrentHex}
+			moves = &Moves_t{TurnId: t.Id, UnitId: unitId, PreviousHex: location.PreviousHex, CurrentHex: location.CurrentHex}
 			t.UnitMoves[moves.UnitId] = moves
 			scriesLinePrefix = []byte(fmt.Sprintf("%s Scry: ", unitId))
 			statusLinePrefix = []byte(fmt.Sprintf("%s Status: ", unitId))
@@ -131,7 +131,7 @@ func ParseInput(fid, tid string, input []byte, acceptLoneDash, debugParser, debu
 				log.Printf("%s: %s: %d: location %q\n", fid, unitId, lineNo, slug(line, 12))
 				return t, fmt.Errorf("duplicate unit in turn")
 			}
-			moves = &Moves_t{TurnId: t.Id, UnitId: unitId, FromHex: location.PreviousHex, ToHex: location.CurrentHex}
+			moves = &Moves_t{TurnId: t.Id, UnitId: unitId, PreviousHex: location.PreviousHex, CurrentHex: location.CurrentHex}
 			t.UnitMoves[moves.UnitId] = moves
 			statusLinePrefix = []byte(fmt.Sprintf("%s Status: ", unitId))
 		} else if rxGarrisonSection.Match(line) {
@@ -145,7 +145,7 @@ func ParseInput(fid, tid string, input []byte, acceptLoneDash, debugParser, debu
 				log.Printf("%s: %s: %d: location %q\n", fid, unitId, lineNo, slug(line, 15))
 				return t, fmt.Errorf("duplicate unit in turn")
 			}
-			moves = &Moves_t{TurnId: t.Id, UnitId: unitId, FromHex: location.PreviousHex, ToHex: location.CurrentHex}
+			moves = &Moves_t{TurnId: t.Id, UnitId: unitId, PreviousHex: location.PreviousHex, CurrentHex: location.CurrentHex}
 			t.UnitMoves[moves.UnitId] = moves
 			scriesLinePrefix = []byte(fmt.Sprintf("%s Scry: ", unitId))
 			statusLinePrefix = []byte(fmt.Sprintf("%s Status: ", unitId))
@@ -160,7 +160,7 @@ func ParseInput(fid, tid string, input []byte, acceptLoneDash, debugParser, debu
 				log.Printf("%s: %s: %d: location %q\n", fid, unitId, lineNo, slug(line, 10))
 				return t, fmt.Errorf("duplicate unit in turn")
 			}
-			moves = &Moves_t{TurnId: t.Id, UnitId: unitId, FromHex: location.PreviousHex, ToHex: location.CurrentHex}
+			moves = &Moves_t{TurnId: t.Id, UnitId: unitId, PreviousHex: location.PreviousHex, CurrentHex: location.CurrentHex}
 			t.UnitMoves[moves.UnitId] = moves
 			scriesLinePrefix = []byte(fmt.Sprintf("%s Scry: ", unitId))
 			statusLinePrefix = []byte(fmt.Sprintf("%s Status: ", unitId))
@@ -321,7 +321,6 @@ type Scry_t struct {
 	Type        unit_movement.Type_e
 	Origin      string // the hex the scry originates in
 	Coordinates coords.WorldMapCoord
-	Location    coords.Map
 	Text        []byte // the results of scrying in that hex
 	Moves       []*Move_t
 	Scouts      *Scout_t
@@ -500,12 +499,7 @@ func ParseScryLine(fid, tid string, unitId UnitId_t, lineNo int, line []byte, ac
 		log.Printf("%s: %s: %d: %q\n", fid, unitId, lineNo, s.Origin)
 		panic(err)
 	}
-	s.Location, err = coords.HexToMap(s.Origin)
-	if err != nil {
-		log.Printf("%s: %s: %d: %q\n", fid, unitId, lineNo, s.Origin)
-		panic(err)
-	}
-	//log.Printf("%s: %s: %d: %q\n", fid, unitId, lineNo, s.Location.ToHex())
+	//log.Printf("%s: %s: %d: %q\n", fid, unitId, lineNo, s.Location.CurrentHex())
 	if bytes.HasPrefix(s.Text, []byte{'S', 'c', 'o', 'u', 't'}) {
 		s.Type = unit_movement.Scouts
 		//log.Printf("scry: unit %q: origin %q: text %q: type %v\n", s.UnitId, s.Origin, s.Text, s.Type)

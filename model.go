@@ -45,15 +45,15 @@ type Moves_t struct {
 	TurnId string   `json:"turn-id,omitempty"`
 	UnitId UnitId_t `json:"unit-id,omitempty"`
 
-	// FromHex is the hex the unit starts the move in.
+	// PreviousHex is the hex the unit starts the move in.
 	// This could be "N/A" if the unit was created this turn.
 	// In that case, we will populate it when we know where the unit started.
-	FromHex string `json:"from-hex,omitempty"`
+	PreviousHex string `json:"previous-hex,omitempty"`
 
-	// ToHex is the hex is unit ends the movement in.
+	// CurrentHex is the hex is unit ends the movement in.
 	// This should always be set from the turn report.
-	// It might be the same as the FromHex if the unit stays in place or fails to move.
-	ToHex string `json:"to-hex,omitempty"`
+	// It might be the same as the PreviousHex if the unit stays in place or fails to move.
+	CurrentHex string `json:"current-hex,omitempty"`
 
 	// warning: we're changing from "location" to "coordinates."
 	// this is a breaking change so we're introducing new fields, FromCoordinates and ToCoordinates, to help.
@@ -67,9 +67,6 @@ type Moves_t struct {
 	// This should always be set from the turn report.
 	// It might be the same as the PreviousCoordinates if the unit stays in place or fails to move.
 	CurrentCoordinates coords.WorldMapCoord `json:"current-coordinates,omitempty"`
-
-	Coordinates coords.WorldMapCoord `json:"coordinates,omitempty"`
-	Location    coords.Map           `json:"location,omitempty"`
 
 	// all the moves made this turn
 	Moves   []*Move_t `json:"moves,omitempty"`
@@ -89,13 +86,8 @@ type Moves_t struct {
 type Move_t struct {
 	UnitId UnitId_t `json:"unit-id,omitempty"`
 
-	// warning: we're changing from "location" to "coordinates" for tiles.
-	// this is a breaking change so we're introducing new fields, FromCoordinates and ToCoordinates, to help.
 	FromCoordinates coords.WorldMapCoord `json:"from-coordinates,omitempty"`
 	ToCoordinates   coords.WorldMapCoord `json:"to-coordinates,omitempty"`
-
-	// Location is the tile the unit ends the move in
-	Location coords.Map `json:"location,omitempty"`
 
 	// the types of movement that a unit can make.
 	Advance direction.Direction_e `json:"advance,omitempty"`
@@ -121,7 +113,6 @@ type Scry_t struct {
 	Type        unit_movement.Type_e `json:"type,omitempty"`
 	Origin      string               `json:"origin,omitempty"`
 	Coordinates coords.WorldMapCoord `json:"coordinates,omitempty"`
-	Location    coords.Map           `json:"location,omitempty"`
 	Text        []byte               `json:"text,omitempty"`
 	Moves       []*Move_t            `json:"moves,omitempty"`
 	Scouts      *Scout_t             `json:"scouts,omitempty"`
@@ -143,9 +134,8 @@ type Scout_t struct {
 type Report_t struct {
 	UnitId UnitId_t `json:"unit-id,omitempty"`
 
-	Location      coords.Map `json:"location,omitempty"`
-	TurnId        string     `json:"turn-id,omitempty"`
-	ScoutedTurnId string     `json:"scouted-turn-id,omitempty"`
+	TurnId        string `json:"turn-id,omitempty"`
+	ScoutedTurnId string `json:"scouted-turn-id,omitempty"`
 
 	// permanent items in this hex
 	Terrain terrain.Terrain_e `json:"terrain,omitempty"`

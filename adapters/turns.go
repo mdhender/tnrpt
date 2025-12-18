@@ -24,18 +24,6 @@ func AdaptParserTurnToModel(source string, pt *azul.Turn_t) (*tnrpt.Turn_t, erro
 		mt.UnitMoves[tnrpt.UnitId_t(k)] = adaptParserMoves(v)
 	}
 
-	//for _, v := range pt.SortedMoves {
-	//	if mv, ok := mt.UnitMoves[tnrpt.UnitId_t(v.UnitId)]; ok {
-	//		mt.SortedMoves = append(mt.SortedMoves, mv)
-	//	}
-	//}
-
-	//for _, v := range pt.MovesSortedByElement {
-	//	if mv, ok := mt.UnitMoves[tnrpt.UnitId_t(v.UnitId)]; ok {
-	//		mt.MovesSortedByElement = append(mt.MovesSortedByElement, mv)
-	//	}
-	//}
-
 	for k, v := range pt.SpecialNames {
 		mt.SpecialNames[k] = &tnrpt.Special_t{
 			TurnId: v.TurnId,
@@ -56,10 +44,8 @@ func adaptParserMoves(pm *azul.Moves_t) *tnrpt.Moves_t {
 		UnitId:      tnrpt.UnitId_t(pm.UnitId),
 		Follows:     tnrpt.UnitId_t(pm.Follows),
 		GoesTo:      pm.GoesTo,
-		FromHex:     pm.FromHex,
-		ToHex:       pm.ToHex,
-		Coordinates: pm.Coordinates,
-		Location:    pm.Location,
+		PreviousHex: pm.PreviousHex,
+		CurrentHex:  pm.CurrentHex,
 	}
 
 	for _, v := range pm.Moves {
@@ -96,7 +82,6 @@ func adaptParserMove(pm *azul.Move_t) *tnrpt.Move_t {
 		CurrentHex:      pm.CurrentHex,
 		FromCoordinates: pm.FromCoordinates,
 		ToCoordinates:   pm.ToCoordinates,
-		Location:        pm.Location,
 	}
 }
 
@@ -109,7 +94,6 @@ func adaptParserScry(ps *azul.Scry_t) *tnrpt.Scry_t {
 		Type:        ps.Type,
 		Origin:      ps.Origin,
 		Coordinates: ps.Coordinates,
-		Location:    ps.Location,
 		Text:        ps.Text,
 		Scouts:      adaptParserScout(ps.Scouts),
 	}
@@ -145,7 +129,6 @@ func adaptParserReport(pr *azul.Report_t) *tnrpt.Report_t {
 	}
 	mr := &tnrpt.Report_t{
 		UnitId:        tnrpt.UnitId_t(pr.UnitId),
-		Location:      pr.Location,
 		TurnId:        pr.TurnId,
 		ScoutedTurnId: pr.ScoutedTurnId,
 		Terrain:       pr.Terrain,

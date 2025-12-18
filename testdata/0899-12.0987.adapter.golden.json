@@ -7,32 +7,19 @@
     "0987": {
       "turn-id": "0899-12",
       "unit-id": "0987",
-      "from-hex": "QQ 1010",
-      "to-hex": "QQ 1010",
+      "previous-hex": "QQ 1010",
+      "current-hex": "QQ 1010",
       "previous-coordinates": "AA 0101",
       "current-coordinates": "AA 0101",
-      "coordinates": "AA 0101",
-      "location": {
-        "Column": 0,
-        "Row": 0
-      },
       "moves": [
         {
           "unit-id": "0987",
           "from-coordinates": "AA 0101",
           "to-coordinates": "AA 0101",
-          "location": {
-            "Column": 0,
-            "Row": 0
-          },
           "still": true,
           "result": "Status Line",
           "report": {
             "unit-id": "0987",
-            "location": {
-              "Column": 0,
-              "Row": 0
-            },
             "turn-id": "0899-12",
             "terrain": "PR",
             "borders": [
@@ -65,18 +52,10 @@
               "unit-id": "0987",
               "from-coordinates": "AA 0101",
               "to-coordinates": "AA 0101",
-              "location": {
-                "Column": 0,
-                "Row": 0
-              },
               "advance": "NW",
               "result": "Failed",
               "report": {
                 "unit-id": "0987",
-                "location": {
-                  "Column": 0,
-                  "Row": 0
-                },
                 "turn-id": "0899-12",
                 "scouted-turn-id": "0899-12",
                 "borders": [
@@ -102,18 +81,10 @@
               "unit-id": "0987",
               "from-coordinates": "AA 0101",
               "to-coordinates": "AA 0101",
-              "location": {
-                "Column": 0,
-                "Row": 0
-              },
               "advance": "N",
               "result": "Succeeded",
               "report": {
                 "unit-id": "0987",
-                "location": {
-                  "Column": 0,
-                  "Row": 0
-                },
                 "turn-id": "0899-12",
                 "scouted-turn-id": "0899-12",
                 "terrain": "PR",
@@ -140,18 +111,10 @@
               "unit-id": "0987",
               "from-coordinates": "AA 0101",
               "to-coordinates": "AA 0101",
-              "location": {
-                "Column": 0,
-                "Row": 0
-              },
               "advance": "NW",
               "result": "Succeeded",
               "report": {
                 "unit-id": "0987",
-                "location": {
-                  "Column": 0,
-                  "Row": 0
-                },
                 "turn-id": "0899-12",
                 "scouted-turn-id": "0899-12",
                 "terrain": "PR",
@@ -178,18 +141,10 @@
               "unit-id": "0987",
               "from-coordinates": "AA 0101",
               "to-coordinates": "AA 0101",
-              "location": {
-                "Column": 0,
-                "Row": 0
-              },
               "advance": "NW",
               "result": "Succeeded",
               "report": {
                 "unit-id": "0987",
-                "location": {
-                  "Column": 0,
-                  "Row": 0
-                },
                 "turn-id": "0899-12",
                 "scouted-turn-id": "0899-12",
                 "terrain": "GH",
@@ -208,18 +163,10 @@
               "unit-id": "0987",
               "from-coordinates": "AA 0101",
               "to-coordinates": "AA 0101",
-              "location": {
-                "Column": 0,
-                "Row": 0
-              },
               "advance": "NE",
               "result": "Failed",
               "report": {
                 "unit-id": "0987",
-                "location": {
-                  "Column": 0,
-                  "Row": 0
-                },
                 "turn-id": "0899-12",
                 "scouted-turn-id": "0899-12",
                 "borders": [
@@ -245,18 +192,10 @@
               "unit-id": "0987",
               "from-coordinates": "AA 0101",
               "to-coordinates": "AA 0101",
-              "location": {
-                "Column": 0,
-                "Row": 0
-              },
               "advance": "N",
               "result": "Succeeded",
               "report": {
                 "unit-id": "0987",
-                "location": {
-                  "Column": 0,
-                  "Row": 0
-                },
                 "turn-id": "0899-12",
                 "scouted-turn-id": "0899-12",
                 "terrain": "PR",
@@ -283,18 +222,10 @@
               "unit-id": "0987",
               "from-coordinates": "AA 0101",
               "to-coordinates": "AA 0101",
-              "location": {
-                "Column": 0,
-                "Row": 0
-              },
               "advance": "N",
               "result": "Failed",
               "report": {
                 "unit-id": "0987",
-                "location": {
-                  "Column": 0,
-                  "Row": 0
-                },
                 "turn-id": "0899-12",
                 "scouted-turn-id": "0899-12",
                 "borders": [
@@ -320,18 +251,10 @@
               "unit-id": "0987",
               "from-coordinates": "AA 0101",
               "to-coordinates": "AA 0101",
-              "location": {
-                "Column": 0,
-                "Row": 0
-              },
               "advance": "NE",
               "result": "Succeeded",
               "report": {
                 "unit-id": "0987",
-                "location": {
-                  "Column": 0,
-                  "Row": 0
-                },
                 "turn-id": "0899-12",
                 "scouted-turn-id": "0899-12",
                 "terrain": "PR",
@@ -354,18 +277,10 @@
               "unit-id": "0987",
               "from-coordinates": "AA 0101",
               "to-coordinates": "AA 0101",
-              "location": {
-                "Column": 0,
-                "Row": 0
-              },
               "advance": "N",
               "result": "Failed",
               "report": {
                 "unit-id": "0987",
-                "location": {
-                  "Column": 0,
-                  "Row": 0
-                },
                 "turn-id": "0899-12",
                 "scouted-turn-id": "0899-12",
                 "borders": [
@@ -391,18 +306,10 @@
               "unit-id": "0987",
               "from-coordinates": "AA 0101",
               "to-coordinates": "AA 0101",
-              "location": {
-                "Column": 0,
-                "Row": 0
-              },
               "advance": "SE",
               "result": "Succeeded",
               "report": {
                 "unit-id": "0987",
-                "location": {
-                  "Column": 0,
-                  "Row": 0
-                },
                 "turn-id": "0899-12",
                 "scouted-turn-id": "0899-12",
                 "terrain": "PR",
@@ -421,18 +328,10 @@
               "unit-id": "0987",
               "from-coordinates": "AA 0101",
               "to-coordinates": "AA 0101",
-              "location": {
-                "Column": 0,
-                "Row": 0
-              },
               "advance": "NE",
               "result": "Failed",
               "report": {
                 "unit-id": "0987",
-                "location": {
-                  "Column": 0,
-                  "Row": 0
-                },
                 "turn-id": "0899-12",
                 "scouted-turn-id": "0899-12",
                 "borders": [
@@ -458,18 +357,10 @@
               "unit-id": "0987",
               "from-coordinates": "AA 0101",
               "to-coordinates": "AA 0101",
-              "location": {
-                "Column": 0,
-                "Row": 0
-              },
               "advance": "S",
               "result": "Succeeded",
               "report": {
                 "unit-id": "0987",
-                "location": {
-                  "Column": 0,
-                  "Row": 0
-                },
                 "turn-id": "0899-12",
                 "scouted-turn-id": "0899-12",
                 "terrain": "GH",
@@ -488,18 +379,10 @@
               "unit-id": "0987",
               "from-coordinates": "AA 0101",
               "to-coordinates": "AA 0101",
-              "location": {
-                "Column": 0,
-                "Row": 0
-              },
               "advance": "SE",
               "result": "Succeeded",
               "report": {
                 "unit-id": "0987",
-                "location": {
-                  "Column": 0,
-                  "Row": 0
-                },
                 "turn-id": "0899-12",
                 "scouted-turn-id": "0899-12",
                 "terrain": "PR",
@@ -526,18 +409,10 @@
               "unit-id": "0987",
               "from-coordinates": "AA 0101",
               "to-coordinates": "AA 0101",
-              "location": {
-                "Column": 0,
-                "Row": 0
-              },
               "advance": "SE",
               "result": "Failed",
               "report": {
                 "unit-id": "0987",
-                "location": {
-                  "Column": 0,
-                  "Row": 0
-                },
                 "turn-id": "0899-12",
                 "scouted-turn-id": "0899-12",
                 "borders": [
@@ -563,18 +438,10 @@
               "unit-id": "0987",
               "from-coordinates": "AA 0101",
               "to-coordinates": "AA 0101",
-              "location": {
-                "Column": 0,
-                "Row": 0
-              },
               "advance": "S",
               "result": "Succeeded",
               "report": {
                 "unit-id": "0987",
-                "location": {
-                  "Column": 0,
-                  "Row": 0
-                },
                 "turn-id": "0899-12",
                 "scouted-turn-id": "0899-12",
                 "terrain": "GH",
@@ -593,18 +460,10 @@
               "unit-id": "0987",
               "from-coordinates": "AA 0101",
               "to-coordinates": "AA 0101",
-              "location": {
-                "Column": 0,
-                "Row": 0
-              },
               "advance": "S",
               "result": "Succeeded",
               "report": {
                 "unit-id": "0987",
-                "location": {
-                  "Column": 0,
-                  "Row": 0
-                },
                 "turn-id": "0899-12",
                 "scouted-turn-id": "0899-12",
                 "terrain": "PR",
@@ -627,18 +486,10 @@
               "unit-id": "0987",
               "from-coordinates": "AA 0101",
               "to-coordinates": "AA 0101",
-              "location": {
-                "Column": 0,
-                "Row": 0
-              },
               "advance": "S",
               "result": "Succeeded",
               "report": {
                 "unit-id": "0987",
-                "location": {
-                  "Column": 0,
-                  "Row": 0
-                },
                 "turn-id": "0899-12",
                 "scouted-turn-id": "0899-12",
                 "terrain": "PR",
@@ -665,18 +516,10 @@
               "unit-id": "0987",
               "from-coordinates": "AA 0101",
               "to-coordinates": "AA 0101",
-              "location": {
-                "Column": 0,
-                "Row": 0
-              },
               "advance": "NW",
               "result": "Failed",
               "report": {
                 "unit-id": "0987",
-                "location": {
-                  "Column": 0,
-                  "Row": 0
-                },
                 "turn-id": "0899-12",
                 "scouted-turn-id": "0899-12",
                 "borders": [
@@ -702,18 +545,10 @@
               "unit-id": "0987",
               "from-coordinates": "AA 0101",
               "to-coordinates": "AA 0101",
-              "location": {
-                "Column": 0,
-                "Row": 0
-              },
               "advance": "SW",
               "result": "Succeeded",
               "report": {
                 "unit-id": "0987",
-                "location": {
-                  "Column": 0,
-                  "Row": 0
-                },
                 "turn-id": "0899-12",
                 "scouted-turn-id": "0899-12",
                 "terrain": "GH",
@@ -747,18 +582,10 @@
               "unit-id": "0987",
               "from-coordinates": "AA 0101",
               "to-coordinates": "AA 0101",
-              "location": {
-                "Column": 0,
-                "Row": 0
-              },
               "advance": "S",
               "result": "Failed",
               "report": {
                 "unit-id": "0987",
-                "location": {
-                  "Column": 0,
-                  "Row": 0
-                },
                 "turn-id": "0899-12",
                 "scouted-turn-id": "0899-12",
                 "borders": [
