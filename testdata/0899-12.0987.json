@@ -1,0 +1,777 @@
+{
+  "id": "0899-12",
+  "year": 899,
+  "month": 12,
+  "unit-moves": {
+    "0987": {
+      "turn-id": "0899-12",
+      "unit-id": "0987",
+      "moves": [
+        {
+          "unit-id": "0987",
+          "still": true,
+          "result": "Status Line",
+          "report": {
+            "unit-id": "0987",
+            "location": {
+              "Column": 0,
+              "Row": 0
+            },
+            "turn-id": "0899-12",
+            "terrain": "PR",
+            "borders": [
+              {
+                "direction": "NW",
+                "terrain": "L"
+              }
+            ],
+            "encounters": [
+              {
+                "turn-id": "0899-12",
+                "unit-id": "0987"
+              }
+            ]
+          },
+          "line-no": 13,
+          "step-no": 1,
+          "line": "UFJBSVJJRSwgTCBOVywwOTg3",
+          "turn-id": "0899-12",
+          "from-coordinates": "AA 0101",
+          "to-coordinates": "AA 0101",
+          "location": {
+            "Column": 0,
+            "Row": 0
+          }
+        }
+      ],
+      "scouts": [
+        {
+          "no": 1,
+          "turn-id": "0899-12",
+          "moves": [
+            {
+              "unit-id": "0987",
+              "advance": "NW",
+              "result": "Failed",
+              "report": {
+                "unit-id": "0987",
+                "location": {
+                  "Column": 0,
+                  "Row": 0
+                },
+                "turn-id": "0899-12",
+                "scouted-turn-id": "0899-12",
+                "borders": [
+                  {
+                    "direction": "NW",
+                    "terrain": "L"
+                  }
+                ]
+              },
+              "line-no": 4,
+              "step-no": 1,
+              "line": "LENhbid0IE1vdmUgb24gTGFrZSB0byBOVyBvZiBIRVgsIE5vdGhpbmcgb2YgaW50ZXJlc3QgZm91bmQ=",
+              "from-coordinates": "AA 0101",
+              "to-coordinates": "AA 0101",
+              "location": {
+                "Column": 0,
+                "Row": 0
+              }
+            }
+          ],
+          "line-no": 4,
+          "line": "U2NvdXQgMTpTY291dCAsQ2FuJ3QgTW92ZSBvbiBMYWtlIHRvIE5XIG9mIEhFWCwgTm90aGluZyBvZiBpbnRlcmVzdCBmb3VuZA=="
+        },
+        {
+          "no": 2,
+          "turn-id": "0899-12",
+          "moves": [
+            {
+              "unit-id": "0987",
+              "advance": "N",
+              "result": "Succeeded",
+              "report": {
+                "unit-id": "0987",
+                "location": {
+                  "Column": 0,
+                  "Row": 0
+                },
+                "turn-id": "0899-12",
+                "scouted-turn-id": "0899-12",
+                "terrain": "PR",
+                "borders": [
+                  {
+                    "direction": "N",
+                    "edge": "River"
+                  },
+                  {
+                    "direction": "NE",
+                    "edge": "River"
+                  },
+                  {
+                    "direction": "SW",
+                    "terrain": "L"
+                  }
+                ]
+              },
+              "line-no": 5,
+              "step-no": 1,
+              "line": "Ti1QUiwgLCBMIFNXLFJpdmVyIE4gTkU=",
+              "from-coordinates": "AA 0101",
+              "to-coordinates": "AA 0101",
+              "location": {
+                "Column": 0,
+                "Row": 0
+              }
+            },
+            {
+              "unit-id": "0987",
+              "advance": "NW",
+              "result": "Succeeded",
+              "report": {
+                "unit-id": "0987",
+                "location": {
+                  "Column": 0,
+                  "Row": 0
+                },
+                "turn-id": "0899-12",
+                "scouted-turn-id": "0899-12",
+                "terrain": "PR",
+                "borders": [
+                  {
+                    "direction": "NE",
+                    "edge": "Ford"
+                  },
+                  {
+                    "direction": "S",
+                    "terrain": "L"
+                  },
+                  {
+                    "direction": "SW",
+                    "terrain": "L"
+                  }
+                ]
+              },
+              "line-no": 5,
+              "step-no": 2,
+              "line": "TlctUFIsICwgTCBTVywgUyxGb3JkIE5F",
+              "from-coordinates": "AA 0101",
+              "to-coordinates": "AA 0101",
+              "location": {
+                "Column": 0,
+                "Row": 0
+              }
+            },
+            {
+              "unit-id": "0987",
+              "advance": "NW",
+              "result": "Succeeded",
+              "report": {
+                "unit-id": "0987",
+                "location": {
+                  "Column": 0,
+                  "Row": 0
+                },
+                "turn-id": "0899-12",
+                "scouted-turn-id": "0899-12",
+                "terrain": "GH",
+                "borders": [
+                  {
+                    "direction": "S",
+                    "terrain": "L"
+                  }
+                ]
+              },
+              "line-no": 5,
+              "step-no": 3,
+              "line": "TlctR0gsICwgTCBT",
+              "from-coordinates": "AA 0101",
+              "to-coordinates": "AA 0101",
+              "location": {
+                "Column": 0,
+                "Row": 0
+              }
+            },
+            {
+              "unit-id": "0987",
+              "advance": "NE",
+              "result": "Failed",
+              "report": {
+                "unit-id": "0987",
+                "location": {
+                  "Column": 0,
+                  "Row": 0
+                },
+                "turn-id": "0899-12",
+                "scouted-turn-id": "0899-12",
+                "borders": [
+                  {
+                    "direction": "NE",
+                    "terrain": "CH"
+                  }
+                ]
+              },
+              "line-no": 5,
+              "step-no": 4,
+              "line": "LE5vdCBlbm91Z2ggTS5QJ3MgdG8gbW92ZSB0byBORSBpbnRvIENPTklGRVIgSElMTFMsIE5vdGhpbmcgb2YgaW50ZXJlc3QgZm91bmQ=",
+              "from-coordinates": "AA 0101",
+              "to-coordinates": "AA 0101",
+              "location": {
+                "Column": 0,
+                "Row": 0
+              }
+            }
+          ],
+          "line-no": 5,
+          "line": "U2NvdXQgMjpTY291dCBOLVBSLCAsIEwgU1csUml2ZXIgTiBORVxOVy1QUiwgLCBMIFNXLCBTLEZvcmQgTkVcTlctR0gsICwgTCBTXCxOb3QgZW5vdWdoIE0uUCdzIHRvIG1vdmUgdG8gTkUgaW50byBDT05JRkVSIEhJTExTLCBOb3RoaW5nIG9mIGludGVyZXN0IGZvdW5k"
+        },
+        {
+          "no": 3,
+          "turn-id": "0899-12",
+          "moves": [
+            {
+              "unit-id": "0987",
+              "advance": "N",
+              "result": "Succeeded",
+              "report": {
+                "unit-id": "0987",
+                "location": {
+                  "Column": 0,
+                  "Row": 0
+                },
+                "turn-id": "0899-12",
+                "scouted-turn-id": "0899-12",
+                "terrain": "PR",
+                "borders": [
+                  {
+                    "direction": "N",
+                    "edge": "River"
+                  },
+                  {
+                    "direction": "NE",
+                    "edge": "River"
+                  },
+                  {
+                    "direction": "SW",
+                    "terrain": "L"
+                  }
+                ]
+              },
+              "line-no": 6,
+              "step-no": 1,
+              "line": "Ti1QUiwgLCBMIFNXLFJpdmVyIE4gTkU=",
+              "from-coordinates": "AA 0101",
+              "to-coordinates": "AA 0101",
+              "location": {
+                "Column": 0,
+                "Row": 0
+              }
+            },
+            {
+              "unit-id": "0987",
+              "advance": "N",
+              "result": "Failed",
+              "report": {
+                "unit-id": "0987",
+                "location": {
+                  "Column": 0,
+                  "Row": 0
+                },
+                "turn-id": "0899-12",
+                "scouted-turn-id": "0899-12",
+                "borders": [
+                  {
+                    "direction": "N",
+                    "edge": "River"
+                  }
+                ]
+              },
+              "line-no": 6,
+              "step-no": 2,
+              "line": "LE5vIEZvcmQgb24gUml2ZXIgdG8gTiBvZiBIRVgsIE5vdGhpbmcgb2YgaW50ZXJlc3QgZm91bmQ=",
+              "from-coordinates": "AA 0101",
+              "to-coordinates": "AA 0101",
+              "location": {
+                "Column": 0,
+                "Row": 0
+              }
+            }
+          ],
+          "line-no": 6,
+          "line": "U2NvdXQgMzpTY291dCBOLVBSLCAsIEwgU1csUml2ZXIgTiBORVwsTm8gRm9yZCBvbiBSaXZlciB0byBOIG9mIEhFWCwgTm90aGluZyBvZiBpbnRlcmVzdCBmb3VuZA=="
+        },
+        {
+          "no": 4,
+          "turn-id": "0899-12",
+          "moves": [
+            {
+              "unit-id": "0987",
+              "advance": "NE",
+              "result": "Succeeded",
+              "report": {
+                "unit-id": "0987",
+                "location": {
+                  "Column": 0,
+                  "Row": 0
+                },
+                "turn-id": "0899-12",
+                "scouted-turn-id": "0899-12",
+                "terrain": "PR",
+                "borders": [
+                  {
+                    "direction": "N",
+                    "edge": "River"
+                  },
+                  {
+                    "direction": "NE",
+                    "edge": "River"
+                  }
+                ]
+              },
+              "line-no": 7,
+              "step-no": 1,
+              "line": "TkUtUFIsICxSaXZlciBOIE5F",
+              "from-coordinates": "AA 0101",
+              "to-coordinates": "AA 0101",
+              "location": {
+                "Column": 0,
+                "Row": 0
+              }
+            },
+            {
+              "unit-id": "0987",
+              "advance": "N",
+              "result": "Failed",
+              "report": {
+                "unit-id": "0987",
+                "location": {
+                  "Column": 0,
+                  "Row": 0
+                },
+                "turn-id": "0899-12",
+                "scouted-turn-id": "0899-12",
+                "borders": [
+                  {
+                    "direction": "N",
+                    "edge": "River"
+                  }
+                ]
+              },
+              "line-no": 7,
+              "step-no": 2,
+              "line": "LE5vIEZvcmQgb24gUml2ZXIgdG8gTiBvZiBIRVgsIE5vdGhpbmcgb2YgaW50ZXJlc3QgZm91bmQ=",
+              "from-coordinates": "AA 0101",
+              "to-coordinates": "AA 0101",
+              "location": {
+                "Column": 0,
+                "Row": 0
+              }
+            }
+          ],
+          "line-no": 7,
+          "line": "U2NvdXQgNDpTY291dCBORS1QUiwgLFJpdmVyIE4gTkVcLE5vIEZvcmQgb24gUml2ZXIgdG8gTiBvZiBIRVgsIE5vdGhpbmcgb2YgaW50ZXJlc3QgZm91bmQ="
+        },
+        {
+          "no": 5,
+          "turn-id": "0899-12",
+          "moves": [
+            {
+              "unit-id": "0987",
+              "advance": "SE",
+              "result": "Succeeded",
+              "report": {
+                "unit-id": "0987",
+                "location": {
+                  "Column": 0,
+                  "Row": 0
+                },
+                "turn-id": "0899-12",
+                "scouted-turn-id": "0899-12",
+                "terrain": "PR",
+                "borders": [
+                  {
+                    "direction": "SE",
+                    "terrain": "O"
+                  }
+                ]
+              },
+              "line-no": 8,
+              "step-no": 1,
+              "line": "U0UtUFIsICwgTyBTRQ==",
+              "from-coordinates": "AA 0101",
+              "to-coordinates": "AA 0101",
+              "location": {
+                "Column": 0,
+                "Row": 0
+              }
+            },
+            {
+              "unit-id": "0987",
+              "advance": "NE",
+              "result": "Failed",
+              "report": {
+                "unit-id": "0987",
+                "location": {
+                  "Column": 0,
+                  "Row": 0
+                },
+                "turn-id": "0899-12",
+                "scouted-turn-id": "0899-12",
+                "borders": [
+                  {
+                    "direction": "NE",
+                    "terrain": "SW"
+                  }
+                ]
+              },
+              "line-no": 8,
+              "step-no": 2,
+              "line": "LE5vdCBlbm91Z2ggTS5QJ3MgdG8gbW92ZSB0byBORSBpbnRvIFNXQU1QLCBOb3RoaW5nIG9mIGludGVyZXN0IGZvdW5k",
+              "from-coordinates": "AA 0101",
+              "to-coordinates": "AA 0101",
+              "location": {
+                "Column": 0,
+                "Row": 0
+              }
+            }
+          ],
+          "line-no": 8,
+          "line": "U2NvdXQgNTpTY291dCBTRS1QUiwgLCBPIFNFXCxOb3QgZW5vdWdoIE0uUCdzIHRvIG1vdmUgdG8gTkUgaW50byBTV0FNUCwgTm90aGluZyBvZiBpbnRlcmVzdCBmb3VuZA=="
+        },
+        {
+          "no": 6,
+          "turn-id": "0899-12",
+          "moves": [
+            {
+              "unit-id": "0987",
+              "advance": "S",
+              "result": "Succeeded",
+              "report": {
+                "unit-id": "0987",
+                "location": {
+                  "Column": 0,
+                  "Row": 0
+                },
+                "turn-id": "0899-12",
+                "scouted-turn-id": "0899-12",
+                "terrain": "GH",
+                "borders": [
+                  {
+                    "direction": "SW",
+                    "terrain": "L"
+                  }
+                ]
+              },
+              "line-no": 9,
+              "step-no": 1,
+              "line": "Uy1HSCwgLCBMIFNX",
+              "from-coordinates": "AA 0101",
+              "to-coordinates": "AA 0101",
+              "location": {
+                "Column": 0,
+                "Row": 0
+              }
+            },
+            {
+              "unit-id": "0987",
+              "advance": "SE",
+              "result": "Succeeded",
+              "report": {
+                "unit-id": "0987",
+                "location": {
+                  "Column": 0,
+                  "Row": 0
+                },
+                "turn-id": "0899-12",
+                "scouted-turn-id": "0899-12",
+                "terrain": "PR",
+                "borders": [
+                  {
+                    "direction": "NE",
+                    "terrain": "O"
+                  },
+                  {
+                    "direction": "SE",
+                    "terrain": "O"
+                  },
+                  {
+                    "direction": "S",
+                    "terrain": "O"
+                  }
+                ]
+              },
+              "line-no": 9,
+              "step-no": 2,
+              "line": "U0UtUFIsICwgTyBORSwgU0UsIFM=",
+              "from-coordinates": "AA 0101",
+              "to-coordinates": "AA 0101",
+              "location": {
+                "Column": 0,
+                "Row": 0
+              }
+            },
+            {
+              "unit-id": "0987",
+              "advance": "SE",
+              "result": "Failed",
+              "report": {
+                "unit-id": "0987",
+                "location": {
+                  "Column": 0,
+                  "Row": 0
+                },
+                "turn-id": "0899-12",
+                "scouted-turn-id": "0899-12",
+                "borders": [
+                  {
+                    "direction": "SE",
+                    "terrain": "O"
+                  }
+                ]
+              },
+              "line-no": 9,
+              "step-no": 3,
+              "line": "LENhbid0IE1vdmUgb24gT2NlYW4gdG8gU0Ugb2YgSEVYLCBOb3RoaW5nIG9mIGludGVyZXN0IGZvdW5k",
+              "from-coordinates": "AA 0101",
+              "to-coordinates": "AA 0101",
+              "location": {
+                "Column": 0,
+                "Row": 0
+              }
+            }
+          ],
+          "line-no": 9,
+          "line": "U2NvdXQgNjpTY291dCBTLUdILCAsIEwgU1dcU0UtUFIsICwgTyBORSwgU0UsIFNcLENhbid0IE1vdmUgb24gT2NlYW4gdG8gU0Ugb2YgSEVYLCBOb3RoaW5nIG9mIGludGVyZXN0IGZvdW5k"
+        },
+        {
+          "no": 7,
+          "turn-id": "0899-12",
+          "moves": [
+            {
+              "unit-id": "0987",
+              "advance": "S",
+              "result": "Succeeded",
+              "report": {
+                "unit-id": "0987",
+                "location": {
+                  "Column": 0,
+                  "Row": 0
+                },
+                "turn-id": "0899-12",
+                "scouted-turn-id": "0899-12",
+                "terrain": "GH",
+                "borders": [
+                  {
+                    "direction": "SW",
+                    "terrain": "L"
+                  }
+                ]
+              },
+              "line-no": 10,
+              "step-no": 1,
+              "line": "Uy1HSCwgLCBMIFNX",
+              "from-coordinates": "AA 0101",
+              "to-coordinates": "AA 0101",
+              "location": {
+                "Column": 0,
+                "Row": 0
+              }
+            },
+            {
+              "unit-id": "0987",
+              "advance": "S",
+              "result": "Succeeded",
+              "report": {
+                "unit-id": "0987",
+                "location": {
+                  "Column": 0,
+                  "Row": 0
+                },
+                "turn-id": "0899-12",
+                "scouted-turn-id": "0899-12",
+                "terrain": "PR",
+                "borders": [
+                  {
+                    "direction": "SE",
+                    "terrain": "O"
+                  },
+                  {
+                    "direction": "NW",
+                    "terrain": "L"
+                  }
+                ]
+              },
+              "line-no": 10,
+              "step-no": 2,
+              "line": "Uy1QUiwgLCBPIFNFLCBMIE5X",
+              "from-coordinates": "AA 0101",
+              "to-coordinates": "AA 0101",
+              "location": {
+                "Column": 0,
+                "Row": 0
+              }
+            },
+            {
+              "unit-id": "0987",
+              "advance": "S",
+              "result": "Succeeded",
+              "report": {
+                "unit-id": "0987",
+                "location": {
+                  "Column": 0,
+                  "Row": 0
+                },
+                "turn-id": "0899-12",
+                "scouted-turn-id": "0899-12",
+                "terrain": "PR",
+                "borders": [
+                  {
+                    "direction": "NE",
+                    "terrain": "O"
+                  },
+                  {
+                    "direction": "SE",
+                    "terrain": "O"
+                  },
+                  {
+                    "direction": "SW",
+                    "terrain": "L"
+                  }
+                ]
+              },
+              "line-no": 10,
+              "step-no": 3,
+              "line": "Uy1QUiwgLCBPIE5FLCBTRSwgTCBTVw==",
+              "from-coordinates": "AA 0101",
+              "to-coordinates": "AA 0101",
+              "location": {
+                "Column": 0,
+                "Row": 0
+              }
+            },
+            {
+              "unit-id": "0987",
+              "advance": "NW",
+              "result": "Failed",
+              "report": {
+                "unit-id": "0987",
+                "location": {
+                  "Column": 0,
+                  "Row": 0
+                },
+                "turn-id": "0899-12",
+                "scouted-turn-id": "0899-12",
+                "borders": [
+                  {
+                    "direction": "NW",
+                    "terrain": "GH"
+                  }
+                ]
+              },
+              "line-no": 10,
+              "step-no": 4,
+              "line": "LE5vdCBlbm91Z2ggTS5QJ3MgdG8gbW92ZSB0byBOVyBpbnRvIEdSQVNTWSBISUxMUywgTm90aGluZyBvZiBpbnRlcmVzdCBmb3VuZA==",
+              "from-coordinates": "AA 0101",
+              "to-coordinates": "AA 0101",
+              "location": {
+                "Column": 0,
+                "Row": 0
+              }
+            }
+          ],
+          "line-no": 10,
+          "line": "U2NvdXQgNzpTY291dCBTLUdILCAsIEwgU1dcUy1QUiwgLCBPIFNFLCBMIE5XXFMtUFIsICwgTyBORSwgU0UsIEwgU1dcLE5vdCBlbm91Z2ggTS5QJ3MgdG8gbW92ZSB0byBOVyBpbnRvIEdSQVNTWSBISUxMUywgTm90aGluZyBvZiBpbnRlcmVzdCBmb3VuZA=="
+        },
+        {
+          "no": 8,
+          "turn-id": "0899-12",
+          "moves": [
+            {
+              "unit-id": "0987",
+              "advance": "SW",
+              "result": "Succeeded",
+              "report": {
+                "unit-id": "0987",
+                "location": {
+                  "Column": 0,
+                  "Row": 0
+                },
+                "turn-id": "0899-12",
+                "scouted-turn-id": "0899-12",
+                "terrain": "GH",
+                "borders": [
+                  {
+                    "direction": "N",
+                    "terrain": "L"
+                  },
+                  {
+                    "direction": "S",
+                    "terrain": "L"
+                  },
+                  {
+                    "direction": "SW",
+                    "terrain": "L"
+                  },
+                  {
+                    "direction": "NW",
+                    "terrain": "L"
+                  }
+                ],
+                "resources": [
+                  "Copper Ore"
+                ]
+              },
+              "line-no": 11,
+              "step-no": 1,
+              "line": "U1ctR0gsICwgTCBTVywgTlcsIE4sIFMsRmluZCBDb3BwZXIgT3Jl",
+              "from-coordinates": "AA 0101",
+              "to-coordinates": "AA 0101",
+              "location": {
+                "Column": 0,
+                "Row": 0
+              }
+            },
+            {
+              "unit-id": "0987",
+              "advance": "S",
+              "result": "Failed",
+              "report": {
+                "unit-id": "0987",
+                "location": {
+                  "Column": 0,
+                  "Row": 0
+                },
+                "turn-id": "0899-12",
+                "scouted-turn-id": "0899-12",
+                "borders": [
+                  {
+                    "direction": "S",
+                    "terrain": "L"
+                  }
+                ]
+              },
+              "line-no": 11,
+              "step-no": 2,
+              "line": "LENhbid0IE1vdmUgb24gTGFrZSB0byBTIG9mIEhFWCwgTm90aGluZyBvZiBpbnRlcmVzdCBmb3VuZA==",
+              "from-coordinates": "AA 0101",
+              "to-coordinates": "AA 0101",
+              "location": {
+                "Column": 0,
+                "Row": 0
+              }
+            }
+          ],
+          "line-no": 11,
+          "line": "U2NvdXQgODpTY291dCBTVy1HSCwgLCBMIFNXLCBOVywgTiwgUyxGaW5kIENvcHBlciBPcmVcLENhbid0IE1vdmUgb24gTGFrZSB0byBTIG9mIEhFWCwgTm90aGluZyBvZiBpbnRlcmVzdCBmb3VuZA=="
+        }
+      ],
+      "from-hex": "QQ 1010",
+      "to-hex": "QQ 1010",
+      "coordinates": "AA 0101",
+      "location": {
+        "Column": 0,
+        "Row": 0
+      }
+    }
+  }
+}

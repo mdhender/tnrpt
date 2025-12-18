@@ -110,26 +110,13 @@ func cmdParse() *cobra.Command {
 			}
 			if data, err := json.MarshalIndent(at, "", "  "); err != nil {
 				log.Fatalf("json: %v\n", err)
+			} else if outputFile == "" {
+				log.Printf("%s\n", string(data))
+			} else if err = os.WriteFile(outputFile, data, 0o644); err != nil {
+				return err
 			} else {
-				log.Printf("turn: %s\n", string(data))
+				log.Printf("%s: wrote %d bytes\n", outputFile, len(data))
 			}
-
-			//ast, err := p.ParseInput()
-			//if err != nil {
-			//	return err
-			//}
-			//
-			//data, err := json.MarshalIndent(ast, "", "  ")
-			//if err != nil {
-			//	return err
-			//}
-			//if outputFile == "" {
-			//	log.Printf("%s\n", string(data))
-			//} else if err = os.WriteFile(outputFile, data, 0o644); err != nil {
-			//	return err
-			//} else {
-			//	log.Printf("%s: wrote %d bytes\n", outputFile, len(data))
-			//}
 
 			return nil
 		},
