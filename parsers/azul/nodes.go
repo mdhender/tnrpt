@@ -1,6 +1,6 @@
 // Copyright (c) 2024 Michael D Henderson. All rights reserved.
 
-package parser
+package azul
 
 import (
 	"bytes"

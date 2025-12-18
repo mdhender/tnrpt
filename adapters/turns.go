@@ -4,11 +4,11 @@ package adapters
 
 import (
 	"github.com/mdhender/tnrpt"
-	"github.com/mdhender/tnrpt/parser"
+	"github.com/mdhender/tnrpt/parsers/azul"
 )
 
 // AdaptParserTurnToModel does that.
-func AdaptParserTurnToModel(pt *parser.Turn_t) (*tnrpt.Turn_t, error) {
+func AdaptParserTurnToModel(pt *azul.Turn_t) (*tnrpt.Turn_t, error) {
 	mt := &tnrpt.Turn_t{
 		Id:           pt.Id,
 		Year:         pt.Year,
@@ -44,7 +44,7 @@ func AdaptParserTurnToModel(pt *parser.Turn_t) (*tnrpt.Turn_t, error) {
 	return mt, nil
 }
 
-func adaptParserMoves(pm *parser.Moves_t) *tnrpt.Moves_t {
+func adaptParserMoves(pm *azul.Moves_t) *tnrpt.Moves_t {
 	if pm == nil {
 		return nil
 	}
@@ -74,7 +74,7 @@ func adaptParserMoves(pm *parser.Moves_t) *tnrpt.Moves_t {
 	return mm
 }
 
-func adaptParserMove(pm *parser.Move_t) *tnrpt.Move_t {
+func adaptParserMove(pm *azul.Move_t) *tnrpt.Move_t {
 	if pm == nil {
 		return nil
 	}
@@ -97,7 +97,7 @@ func adaptParserMove(pm *parser.Move_t) *tnrpt.Move_t {
 	}
 }
 
-func adaptParserScry(ps *parser.Scry_t) *tnrpt.Scry_t {
+func adaptParserScry(ps *azul.Scry_t) *tnrpt.Scry_t {
 	if ps == nil {
 		return nil
 	}
@@ -118,7 +118,7 @@ func adaptParserScry(ps *parser.Scry_t) *tnrpt.Scry_t {
 	return ms
 }
 
-func adaptParserScout(ps *parser.Scout_t) *tnrpt.Scout_t {
+func adaptParserScout(ps *azul.Scout_t) *tnrpt.Scout_t {
 	if ps == nil {
 		return nil
 	}
@@ -136,7 +136,7 @@ func adaptParserScout(ps *parser.Scout_t) *tnrpt.Scout_t {
 	return ms
 }
 
-func adaptParserReport(pr *parser.Report_t) *tnrpt.Report_t {
+func adaptParserReport(pr *azul.Report_t) *tnrpt.Report_t {
 	if pr == nil {
 		return nil
 	}
@@ -174,7 +174,7 @@ func adaptParserReport(pr *parser.Report_t) *tnrpt.Report_t {
 	return mr
 }
 
-func adaptParserBorder(pb *parser.Border_t) *tnrpt.Border_t {
+func adaptParserBorder(pb *azul.Border_t) *tnrpt.Border_t {
 	if pb == nil {
 		return nil
 	}
@@ -185,7 +185,7 @@ func adaptParserBorder(pb *parser.Border_t) *tnrpt.Border_t {
 	}
 }
 
-func adaptParserEncounter(pe *parser.Encounter_t) *tnrpt.Encounter_t {
+func adaptParserEncounter(pe *azul.Encounter_t) *tnrpt.Encounter_t {
 	if pe == nil {
 		return nil
 	}
@@ -196,7 +196,7 @@ func adaptParserEncounter(pe *parser.Encounter_t) *tnrpt.Encounter_t {
 	}
 }
 
-func adaptParserFoundItem(pf *parser.FoundItem_t) *tnrpt.FoundItem_t {
+func adaptParserFoundItem(pf *azul.FoundItem_t) *tnrpt.FoundItem_t {
 	if pf == nil {
 		return nil
 	}
@@ -206,7 +206,7 @@ func adaptParserFoundItem(pf *parser.FoundItem_t) *tnrpt.FoundItem_t {
 	}
 }
 
-func adaptParserSettlement(ps *parser.Settlement_t) *tnrpt.Settlement_t {
+func adaptParserSettlement(ps *azul.Settlement_t) *tnrpt.Settlement_t {
 	if ps == nil {
 		return nil
 	}
@@ -216,7 +216,7 @@ func adaptParserSettlement(ps *parser.Settlement_t) *tnrpt.Settlement_t {
 	}
 }
 
-func adaptParserFarHorizon(pf *parser.FarHorizon_t) *tnrpt.FarHorizon_t {
+func adaptParserFarHorizon(pf *azul.FarHorizon_t) *tnrpt.FarHorizon_t {
 	if pf == nil {
 		return nil
 	}

@@ -11,7 +11,7 @@ import (
 	"time"
 
 	"github.com/mdhender/tnrpt"
-	"github.com/mdhender/tnrpt/parser"
+	"github.com/mdhender/tnrpt/parsers/azul"
 	"github.com/mdhender/tnrpt/turns"
 )
 
@@ -24,7 +24,7 @@ type Renderer struct {
 	excludeUnits map[string]bool
 	includeUnits map[string]bool
 	autoEOL      bool
-	parser       parser.ParseConfig
+	parser       azul.ParseConfig
 	stripCR      bool
 }
 
@@ -46,7 +46,7 @@ func New(path string, quiet, verbose, debug bool, options ...Option) (*Renderer,
 	return p, nil
 }
 
-func (r *Renderer) Run() (*parser.Turn_t, error) {
+func (r *Renderer) Run() (*azul.Turn_t, error) {
 	started := time.Now()
 
 	path, fileName := filepath.Dir(r.source), filepath.Base(r.source)
@@ -57,11 +57,11 @@ func (r *Renderer) Run() (*parser.Turn_t, error) {
 	log.Printf("inputs: found %d turn reports\n", len(inputs))
 
 	// allTurns holds the turn and move data and allows multiple clans to be loaded.
-	allTurns := map[string][]*parser.Turn_t{}
+	allTurns := map[string][]*azul.Turn_t{}
 	totalUnitMoves := 0
 	var turnId, maxTurnId string // will be set to the last/maximum turnId we process
 
-	var turn *parser.Turn_t // the last turn parsed
+	var turn *azul.Turn_t // the last turn parsed
 
 	for _, i := range inputs {
 		data, err := os.ReadFile(i.Path)
@@ -91,7 +91,7 @@ func (r *Renderer) Run() (*parser.Turn_t, error) {
 
 		var acceptLoneDash, parserDebugFlag, sectionsDebugFlag, stepsDebugFlag, nodesDebugFlag, fleetMovementDebugFlag, splitTrailingUnits, cleanupScoutStill bool
 
-		turn, err = parser.ParseInput(i.Id, turnId, data, acceptLoneDash, parserDebugFlag, sectionsDebugFlag, stepsDebugFlag, nodesDebugFlag, fleetMovementDebugFlag, splitTrailingUnits, cleanupScoutStill, r.parser)
+		turn, err = azul.ParseInput(i.Id, turnId, data, acceptLoneDash, parserDebugFlag, sectionsDebugFlag, stepsDebugFlag, nodesDebugFlag, fleetMovementDebugFlag, splitTrailingUnits, cleanupScoutStill, r.parser)
 		if err != nil {
 			log.Fatal(err)
 		} else if turnId != fmt.Sprintf("%04d-%02d", turn.Year, turn.Month) {
