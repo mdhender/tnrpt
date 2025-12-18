@@ -325,3 +325,107 @@ func (p *cstParser) errorExpected(kind Kind) *Token {
 func (p *cstParser) errorExpectedOneOf(kinds ...Kind) *Token {
 	panic("!implemented")
 }
+
+// parse things
+
+// todo: happy path only!
+func (p *cstParser) parseLiteral(kind Kind, nodeKind string) Node {
+	tok := p.expect(kind)
+	return newLiteralNode(tok, nodeKind)
+}
+
+// todo: happy path only!
+func (p *cstParser) parseLongLocation(prefixKind Kind) Node {
+	// prefix: Current or Previous
+	prefix := p.parseLiteral(prefixKind, "Prefix")
+	if prefix == nil {
+		panic("assert(happy path)")
+	}
+
+	// Hex keyword
+	hexKw := p.parseLiteral(Hex, "Hex")
+
+	// Equal sign
+	equal := p.parseLiteral(EQUALS, "Equal")
+
+	// Either "N/A" or "Grid RowColumn"
+	var grid, rowColumn, na Node
+
+	if p.match(NA) {
+		na = p.parseLiteral(NA, "NA")
+	} else {
+		grid = p.parseLiteral(Grid, "Grid")
+		rowColumn = p.parseLiteral(Number, "RowColumn")
+	}
+
+	return newLongLocationNode(prefix, hexKw, equal, grid, rowColumn, na)
+}
+
+// todo: happy path only!
+func (p *cstParser) parseUnitId() Node {
+	tok := p.expect(UnitId)
+	return newUnitIdNode(tok)
+}
+
+// todo: happy path only!
+func (p *cstParser) parseUnitLocationLine() *UnitLocationLineNode {
+	// Tribe keyword
+	var unitTypeKw Node
+	for _, kind := range []Kind{Tribe, Courier, Garrison, Element, Fleet} {
+		if !p.match(kind) {
+			continue
+		}
+		unitTypeKw = p.parseLiteral(kind, "UnitType")
+		break
+	}
+	if unitTypeKw == nil {
+		panic("assert(happy path)")
+	}
+
+	// UnitId
+	unitId := p.parseUnitId()
+
+	// Comma1
+	comma1 := p.parseLiteral(COMMA, "Comma")
+
+	// Note? (this is where your real parser would look for NOT_COMMA/EOL/etc.)
+	var note Node
+	if p.match(Text) {
+		note = p.parseLiteral(Text, "Note")
+	}
+
+	// Comma2
+	comma2 := p.parseLiteral(COMMA, "Comma")
+
+	// CurrentLocation
+	currentLoc := p.parseLongLocation(Current)
+
+	// Comma3
+	comma3 := p.parseLiteral(COMMA, "Comma")
+
+	// LeftParen
+	leftParen := p.parseLiteral(LEFTPAREN, "LeftParen")
+
+	// PreviousLocation
+	prevLoc := p.parseLongLocation(Previous)
+
+	// RightParen
+	rightParen := p.parseLiteral(RIGHTPAREN, "RightParen")
+
+	// EndOfLine
+	eol := p.parseLiteral(EndOfLine, "EndOfLine")
+
+	return newUnitLocationLineNode(
+		unitTypeKw,
+		unitId,
+		comma1,
+		note,
+		comma2,
+		currentLoc,
+		comma3,
+		leftParen,
+		prevLoc,
+		rightParen,
+		eol,
+	)
+}

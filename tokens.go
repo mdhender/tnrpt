@@ -97,8 +97,22 @@ func (s Span) Text(input []byte) []byte {
 	return input[s.Start:s.End]
 }
 
-// SpanFromTokens returns a span of the tokens.
-func SpanFromTokens(first, last *Token) Span {
+// spanFromToken creates a Span that covers a single token.
+func spanFromToken(tok *Token) Span {
+	return Span{
+		Start:  tok.Position.Start,
+		End:    tok.End,
+		Line:   tok.Position.Line,
+		Column: tok.Position.Column,
+	}
+}
+
+// spanFromTokenSlice creates a Span from a slice of tokens (assumed non-empty).
+func spanFromTokenSlice(toks []*Token) Span {
+	if len(toks) == 0 {
+		return Span{} // caller should avoid this
+	}
+	first, last := toks[0], toks[len(toks)-1]
 	return Span{
 		Start:  first.Position.Start,
 		End:    last.End,

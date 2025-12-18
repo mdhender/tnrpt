@@ -2,9 +2,8 @@ package tnrpt
 
 //go:generate stringer --type Kind
 
+// Kind implements enums for tokens
 type Kind int
-
-// enums for token Kind
 
 const (
 	UNKNOWN Kind = iota
