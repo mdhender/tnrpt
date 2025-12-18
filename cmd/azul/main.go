@@ -104,7 +104,7 @@ func cmdParse() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			at, err := adapters.AdaptParserTurnToModel(pt)
+			at, err := adapters.AdaptParserTurnToModel(args[0], pt)
 			if err != nil {
 				return err
 			}

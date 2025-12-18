@@ -3,14 +3,17 @@
 package adapters
 
 import (
+	"path/filepath"
+
 	"github.com/mdhender/tnrpt"
 	"github.com/mdhender/tnrpt/parsers/azul"
 )
 
 // AdaptParserTurnToModel does that.
-func AdaptParserTurnToModel(pt *azul.Turn_t) (*tnrpt.Turn_t, error) {
+func AdaptParserTurnToModel(source string, pt *azul.Turn_t) (*tnrpt.Turn_t, error) {
 	mt := &tnrpt.Turn_t{
 		Id:           pt.Id,
+		Source:       filepath.Clean(source),
 		Year:         pt.Year,
 		Month:        pt.Month,
 		UnitMoves:    map[tnrpt.UnitId_t]*tnrpt.Moves_t{},
@@ -88,7 +91,7 @@ func adaptParserMove(pm *azul.Move_t) *tnrpt.Move_t {
 		Report:          adaptParserReport(pm.Report),
 		LineNo:          pm.LineNo,
 		StepNo:          pm.StepNo,
-		Line:            pm.Line,
+		Line:            string(pm.Line),
 		TurnId:          pm.TurnId,
 		CurrentHex:      pm.CurrentHex,
 		FromCoordinates: pm.FromCoordinates,
@@ -126,7 +129,7 @@ func adaptParserScout(ps *azul.Scout_t) *tnrpt.Scout_t {
 		No:     ps.No,
 		TurnId: ps.TurnId,
 		LineNo: ps.LineNo,
-		Line:   ps.Line,
+		Line:   string(ps.Line),
 	}
 
 	for _, v := range ps.Moves {

@@ -17,16 +17,19 @@ import (
 // Turns_t uses the turn's id as the key.
 type Turns_t map[string]*Turn_t
 
-// Turn represents a single turn identified by year and month.
+// Turn_t represents the data from a single file, which must contain
+// a single turn. The turn is identified by year and month.
 type Turn_t struct {
-	Id    string `json:"id,omitempty"`
-	Year  int    `json:"year,omitempty"`
-	Month int    `json:"month,omitempty"`
+	Id string `json:"id,omitempty"`
+
+	// Source is the name of the input file
+	Source string `json:"source,omitempty"`
+
+	Year  int `json:"year,omitempty"`
+	Month int `json:"month,omitempty"`
 
 	// UnitMoves holds the units that moved in this turn
 	UnitMoves map[UnitId_t]*Moves_t `json:"unit-moves,omitempty"`
-	//SortedMoves          []*Moves_t            `json:"sorted-moves,omitempty"`
-	//MovesSortedByElement []*Moves_t            `json:"moves-sorted-by-element,omitempty"`
 
 	// SpecialNames holds the names of the hexes that are special.
 	// It's a hack to get around the fact that the parser doesn't know about the hexes.
@@ -42,17 +45,6 @@ type Moves_t struct {
 	TurnId string   `json:"turn-id,omitempty"`
 	UnitId UnitId_t `json:"unit-id,omitempty"`
 
-	// all the moves made this turn
-	Moves   []*Move_t `json:"moves,omitempty"`
-	Follows UnitId_t  `json:"follows,omitempty"`
-	GoesTo  string    `json:"goes-to,omitempty"`
-
-	// all the scry results for this turn
-	Scries []*Scry_t `json:"scries,omitempty"`
-
-	// Scouts are optional and move at the end of the turn
-	Scouts []*Scout_t `json:"scouts,omitempty"`
-
 	// FromHex is the hex the unit starts the move in.
 	// This could be "N/A" if the unit was created this turn.
 	// In that case, we will populate it when we know where the unit started.
@@ -63,8 +55,32 @@ type Moves_t struct {
 	// It might be the same as the FromHex if the unit stays in place or fails to move.
 	ToHex string `json:"to-hex,omitempty"`
 
+	// warning: we're changing from "location" to "coordinates."
+	// this is a breaking change so we're introducing new fields, FromCoordinates and ToCoordinates, to help.
+
+	// PreviousCoordinates is the hex the unit starts the move in.
+	// This could be "N/A" if the unit was created this turn.
+	// In that case, we will populate it when we know where the unit started.
+	PreviousCoordinates coords.WorldMapCoord `json:"previous-coordinates,omitempty"`
+
+	// CurrentCoordinates is the hex is unit ends the movement in.
+	// This should always be set from the turn report.
+	// It might be the same as the PreviousCoordinates if the unit stays in place or fails to move.
+	CurrentCoordinates coords.WorldMapCoord `json:"current-coordinates,omitempty"`
+
 	Coordinates coords.WorldMapCoord `json:"coordinates,omitempty"`
 	Location    coords.Map           `json:"location,omitempty"`
+
+	// all the moves made this turn
+	Moves   []*Move_t `json:"moves,omitempty"`
+	Follows UnitId_t  `json:"follows,omitempty"`
+	GoesTo  string    `json:"goes-to,omitempty"`
+
+	// all the scry results for this turn
+	Scries []*Scry_t `json:"scries,omitempty"`
+
+	// Scouts are optional and move at the end of the turn
+	Scouts []*Scout_t `json:"scouts,omitempty"`
 }
 
 // Move_t represents a single move by a unit.
@@ -72,6 +88,14 @@ type Moves_t struct {
 // The move will fail, succeed, or the unit can simply vanish without a trace.
 type Move_t struct {
 	UnitId UnitId_t `json:"unit-id,omitempty"`
+
+	// warning: we're changing from "location" to "coordinates" for tiles.
+	// this is a breaking change so we're introducing new fields, FromCoordinates and ToCoordinates, to help.
+	FromCoordinates coords.WorldMapCoord `json:"from-coordinates,omitempty"`
+	ToCoordinates   coords.WorldMapCoord `json:"to-coordinates,omitempty"`
+
+	// Location is the tile the unit ends the move in
+	Location coords.Map `json:"location,omitempty"`
 
 	// the types of movement that a unit can make.
 	Advance direction.Direction_e `json:"advance,omitempty"`
@@ -86,18 +110,10 @@ type Move_t struct {
 
 	LineNo int    `json:"line-no,omitempty"`
 	StepNo int    `json:"step-no,omitempty"`
-	Line   []byte `json:"line,omitempty"`
+	Line   string `json:"line,omitempty"`
 
 	TurnId     string `json:"turn-id,omitempty"`
 	CurrentHex string `json:"current-hex,omitempty"`
-
-	// warning: we're changing from "location" to "coordinates" for tiles.
-	// this is a breaking change so we're introducing new fields, FromCoordinates and ToCoordinates, to help.
-	FromCoordinates coords.WorldMapCoord `json:"from-coordinates,omitempty"`
-	ToCoordinates   coords.WorldMapCoord `json:"to-coordinates,omitempty"`
-
-	// Location is the tile the unit ends the move in
-	Location coords.Map `json:"location,omitempty"`
 }
 
 type Scry_t struct {
@@ -113,12 +129,13 @@ type Scry_t struct {
 
 // Scout_t represents a scout sent out by a unit.
 type Scout_t struct {
-	No     int       `json:"no,omitempty"`
-	TurnId string    `json:"turn-id,omitempty"`
-	Moves  []*Move_t `json:"moves,omitempty"`
+	No     int    `json:"no,omitempty"`
+	TurnId string `json:"turn-id,omitempty"`
 
 	LineNo int    `json:"line-no,omitempty"`
-	Line   []byte `json:"line,omitempty"`
+	Line   string `json:"line,omitempty"`
+
+	Moves []*Move_t `json:"moves,omitempty"`
 }
 
 // Report_t represents the observations made by a unit.
