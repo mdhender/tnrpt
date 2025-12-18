@@ -309,3 +309,21 @@ func (c WorldMapCoord) String() string {
 	}
 	return fmt.Sprintf("%c%c %s%s", gridRowCode, gridColumnCode, subGridColumnCode, subGridRowCode)
 }
+
+// MarshalJSON implements the json.Marshaler interface.
+func (c WorldMapCoord) MarshalJSON() ([]byte, error) {
+	return []byte(fmt.Sprintf("%q", c.String())), nil
+}
+
+// UnmarshalJSON implements the json.Unmarshaler interface.
+func (c *WorldMapCoord) UnmarshalJSON(data []byte) error {
+	if len(data) < 2 || data[0] != '"' || data[len(data)-1] != '"' {
+		return fmt.Errorf("invalid WorldMapCoord JSON: %s", data)
+	}
+	wmc, err := NewWorldMapCoord(string(data[1 : len(data)-1]))
+	if err != nil {
+		return err
+	}
+	*c = wmc
+	return nil
+}
