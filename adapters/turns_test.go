@@ -9,7 +9,7 @@ import (
 
 	"github.com/mdhender/tnrpt"
 	"github.com/mdhender/tnrpt/adapters"
-	"github.com/mdhender/tnrpt/parser"
+	"github.com/mdhender/tnrpt/parsers/azul"
 	"github.com/mdhender/tnrpt/renderer"
 )
 
@@ -70,7 +70,7 @@ func TestAdaptParserTurnToModel(t *testing.T) {
 	}
 }
 
-func compareMoves(t *testing.T, unitId string, pm *parser.Moves_t, mm *tnrpt.Moves_t) {
+func compareMoves(t *testing.T, unitId string, pm *azul.Moves_t, mm *tnrpt.Moves_t) {
 	t.Helper()
 
 	if mm.TurnId != pm.TurnId {
