@@ -7,7 +7,8 @@ import (
 	"fmt"
 
 	"github.com/mdhender/tnrpt"
-	"github.com/mdhender/tnrpt/parser"
+	"github.com/mdhender/tnrpt/adapters"
+	"github.com/mdhender/tnrpt/renderer"
 	"github.com/spf13/cobra"
 
 	"log"
@@ -30,9 +31,6 @@ func main() {
 		Short: "OttoMap command runner",
 		Long:  `OttoApp runs commands for OttoMap.`,
 		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
-			if showVersion, _ := cmd.Flags().GetBool("show-version"); showVersion {
-				fmt.Printf("tnrpt: version %q\n", tnrpt.Version().Core())
-			}
 			logWithDefaultFlags, _ := cmd.Flags().GetBool("log-with-default-flags")
 			logWithShortFileName, _ := cmd.Flags().GetBool("log-with-shortfile")
 			logWithTimestamp, _ := cmd.Flags().GetBool("log-with-timestamp")
@@ -47,6 +45,11 @@ func main() {
 				logFlags = log.LstdFlags
 			}
 			log.SetFlags(logFlags)
+
+			if showVersion, _ := cmd.Flags().GetBool("show-version"); showVersion {
+				fmt.Printf("tnrpt: version %q\n", tnrpt.Version().Core())
+			}
+
 			return nil
 		},
 	}
@@ -62,40 +65,72 @@ func main() {
 }
 
 func cmdParse() *cobra.Command {
+	autoEOL := true
 	var configFile string
+	var excludeUnits []string
+	var includeUnits []string
 	var outputFile string
 	addFlags := func(cmd *cobra.Command) error {
-		cmd.Flags().StringVar(&configFile, "config-file", configFile, "load configuration from file")
-		cmd.Flags().StringVar(&outputFile, "output", outputFile, "save parse to file")
+		cmd.Flags().BoolVar(&autoEOL, "auto-eol", true, "automatically convert line endings")
+		cmd.Flags().StringVarP(&configFile, "config-file", "c", configFile, "load configuration from file")
+		cmd.Flags().StringSliceVarP(&excludeUnits, "exclude", "e", excludeUnits, "exclude the unit")
+		cmd.Flags().StringSliceVarP(&includeUnits, "include", "i", includeUnits, "include the unit")
+		cmd.Flags().StringVarP(&outputFile, "output", "o", outputFile, "save parse to file")
+		cmd.Flags().BoolVar(&autoEOL, "strip-cr", false, "strip CR from end-of-lines")
 		return nil
 	}
 	var cmd = &cobra.Command{
-		Use:   "parse <turn-report-file>",
-		Short: "parse a turn report file (text or Word)",
-		Args:  cobra.ExactArgs(1), // require path to turn report file
+		Use:          "parse <turn-report-file>",
+		Short:        "parse a turn report file (text or Word)",
+		SilenceUsage: true,
+		Args:         cobra.ExactArgs(1), // require path to turn report file
 		RunE: func(cmd *cobra.Command, args []string) error {
+			quiet, _ := cmd.Flags().GetBool("quiet")
+			verbose, _ := cmd.Flags().GetBool("verbose")
+			debug, _ := cmd.Flags().GetBool("debug")
+			if quiet {
+				verbose = false
+			}
+
 			if configFile != "" {
 				return fmt.Errorf("error: --config-file is not implemented")
 			}
-			p, err := parser.New(args[0])
+
+			r, err := renderer.New(args[0], quiet, verbose, debug)
 			if err != nil {
 				return err
 			}
-			ast, err := p.Parse()
+			pt, err := r.Run()
 			if err != nil {
 				return err
 			}
-			data, err := json.MarshalIndent(ast, "", "  ")
+			at, err := adapters.AdaptParserTurnToModel(pt)
 			if err != nil {
 				return err
 			}
-			if outputFile == "" {
-				fmt.Printf("%s\n", string(data))
-			} else if err = os.WriteFile(outputFile, data, 0o644); err != nil {
-				return err
+			if data, err := json.MarshalIndent(at, "", "  "); err != nil {
+				log.Fatalf("json: %v\n", err)
 			} else {
-				fmt.Printf("%s: wrote %d bytes\n", outputFile, len(data))
+				log.Printf("turn: %s\n", string(data))
 			}
+
+			//ast, err := p.ParseInput()
+			//if err != nil {
+			//	return err
+			//}
+			//
+			//data, err := json.MarshalIndent(ast, "", "  ")
+			//if err != nil {
+			//	return err
+			//}
+			//if outputFile == "" {
+			//	log.Printf("%s\n", string(data))
+			//} else if err = os.WriteFile(outputFile, data, 0o644); err != nil {
+			//	return err
+			//} else {
+			//	log.Printf("%s: wrote %d bytes\n", outputFile, len(data))
+			//}
+
 			return nil
 		},
 	}
