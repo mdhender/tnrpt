@@ -31,14 +31,14 @@ func TestNewWorldMapCoord(t *testing.T) {
 		{2102, "## 3021", "QQ 3021", false},
 		{2103, "## 1508", "QQ 1508", false},
 		// Invalid inputs
-		{3001, "AA0101", "", true},  // missing space
-		{3002, "AA-0101", "", true}, // wrong separator
-		{3003, "A 0101", "", true},  // too short
+		{3001, "AA0101", "", true},   // missing space
+		{3002, "AA-0101", "", true},  // wrong separator
+		{3003, "A 0101", "", true},   // too short
 		{3004, "AAA 0101", "", true}, // wrong length
-		{3005, "AA 0001", "", true}, // column 0 invalid
-		{3006, "AA 3101", "", true}, // column 31 invalid
-		{3007, "AA 0100", "", true}, // row 0 invalid
-		{3008, "AA 0122", "", true}, // row 22 invalid
+		{3005, "AA 0001", "", true},  // column 0 invalid
+		{3006, "AA 3101", "", true},  // column 31 invalid
+		{3007, "AA 0100", "", true},  // row 0 invalid
+		{3008, "AA 0122", "", true},  // row 22 invalid
 	}
 
 	for _, tc := range tests {
@@ -135,6 +135,35 @@ func TestWorldMapCoord_Move(t *testing.T) {
 	}
 }
 
+func TestWorldMapCoord_ID(t *testing.T) {
+	tests := []struct {
+		input  string
+		wantID string
+	}{
+		{"AA 0101", "AA 0101"},
+		{"JK 1508", "JK 1508"},
+		{"ZZ 3021", "ZZ 3021"},
+		{"N/A", "N/A"},         // N/A should return N/A, not AA 0101
+		{"## 1508", "## 1508"}, // obscured should return original ##, not QQ
+	}
+
+	for _, tc := range tests {
+		wmc, err := coords.NewWorldMapCoord(tc.input)
+		if err != nil {
+			t.Fatalf("%q: unexpected error: %v", tc.input, err)
+		}
+		if got := wmc.ID(); got != tc.wantID {
+			t.Errorf("%q: ID() = %q, want %q", tc.input, got, tc.wantID)
+		}
+	}
+
+	// Test zero-value WorldMapCoord
+	var zero coords.WorldMapCoord
+	if got := zero.ID(); got != "N/A" {
+		t.Errorf("zero-value: ID() = %q, want %q", got, "N/A")
+	}
+}
+
 func TestWorldMapCoord_JSON(t *testing.T) {
 	tests := []struct {
 		input    string
@@ -143,6 +172,8 @@ func TestWorldMapCoord_JSON(t *testing.T) {
 		{"AA 0101", `"AA 0101"`},
 		{"JK 1508", `"JK 1508"`},
 		{"ZZ 3021", `"ZZ 3021"`},
+		{"N/A", `"N/A"`},         // N/A should marshal as N/A
+		{"## 1508", `"## 1508"`}, // obscured should marshal with ##
 	}
 
 	for _, tc := range tests {
@@ -170,5 +201,15 @@ func TestWorldMapCoord_JSON(t *testing.T) {
 		if !unmarshaled.Equals(wmc) {
 			t.Errorf("%q: Unmarshal roundtrip failed: got %q", tc.input, unmarshaled.String())
 		}
+	}
+
+	// Test zero-value WorldMapCoord marshals as N/A
+	var zero coords.WorldMapCoord
+	data, err := json.Marshal(zero)
+	if err != nil {
+		t.Fatalf("zero-value: Marshal error: %v", err)
+	}
+	if string(data) != `"N/A"` {
+		t.Errorf("zero-value: Marshal = %s, want %q", data, "N/A")
 	}
 }

@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 
 	"github.com/mdhender/tnrpt"
+	"github.com/mdhender/tnrpt/coords"
 	"github.com/mdhender/tnrpt/parsers/azul"
 )
 
@@ -46,6 +47,12 @@ func adaptParserMoves(pm *azul.Moves_t) *tnrpt.Moves_t {
 		GoesTo:      pm.GoesTo,
 		PreviousHex: pm.PreviousHex,
 		CurrentHex:  pm.CurrentHex,
+	}
+	if pm.PreviousHex != "" {
+		mm.PreviousCoordinates, _ = coords.NewWorldMapCoord(pm.PreviousHex)
+	}
+	if pm.CurrentHex != "" {
+		mm.CurrentCoordinates, _ = coords.NewWorldMapCoord(pm.CurrentHex)
 	}
 
 	for _, v := range pm.Moves {
