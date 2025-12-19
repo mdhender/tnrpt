@@ -172,7 +172,6 @@ func TestWorldMapCoord_JSON(t *testing.T) {
 		{"AA 0101", `"AA 0101"`},
 		{"JK 1508", `"JK 1508"`},
 		{"ZZ 3021", `"ZZ 3021"`},
-		{"N/A", `"N/A"`},         // N/A should marshal as N/A
 		{"## 1508", `"## 1508"`}, // obscured should marshal with ##
 	}
 
@@ -203,13 +202,66 @@ func TestWorldMapCoord_JSON(t *testing.T) {
 		}
 	}
 
-	// Test zero-value WorldMapCoord marshals as N/A
+	// Test zero-value WorldMapCoord marshals as null (IsZero handles omitzero)
 	var zero coords.WorldMapCoord
 	data, err := json.Marshal(zero)
 	if err != nil {
 		t.Fatalf("zero-value: Marshal error: %v", err)
 	}
+	if string(data) != "null" {
+		t.Errorf("zero-value: Marshal = %s, want null", data)
+	}
+
+	// Test N/A WorldMapCoord marshals as "N/A"
+	na, _ := coords.NewWorldMapCoord("N/A")
+	data, err = json.Marshal(na)
+	if err != nil {
+		t.Fatalf("N/A: Marshal error: %v", err)
+	}
 	if string(data) != `"N/A"` {
-		t.Errorf("zero-value: Marshal = %s, want %q", data, "N/A")
+		t.Errorf("N/A: Marshal = %s, want %q", data, "N/A")
+	}
+}
+
+func TestWorldMapCoord_JSON_Omitzero(t *testing.T) {
+	type wrapper struct {
+		Location coords.WorldMapCoord `json:"location,omitzero"`
+	}
+
+	// Valid coordinate should appear in JSON
+	w := wrapper{}
+	w.Location, _ = coords.NewWorldMapCoord("JK 1508")
+	data, _ := json.Marshal(w)
+	if string(data) != `{"location":"JK 1508"}` {
+		t.Errorf("valid: got %s, want %s", data, `{"location":"JK 1508"}`)
+	}
+
+	// Zero-value should be omitted (IsZero returns true)
+	w = wrapper{}
+	data, _ = json.Marshal(w)
+	if string(data) != `{}` {
+		t.Errorf("zero-value: got %s, want {}", data)
+	}
+	if !w.Location.IsZero() {
+		t.Errorf("zero-value: IsZero() = false, want true")
+	}
+
+	// N/A should appear in JSON (IsZero returns false)
+	w = wrapper{}
+	w.Location, _ = coords.NewWorldMapCoord("N/A")
+	data, _ = json.Marshal(w)
+	if string(data) != `{"location":"N/A"}` {
+		t.Errorf("N/A: got %s, want %s", data, `{"location":"N/A"}`)
+	}
+	if w.Location.IsZero() {
+		t.Errorf("N/A: IsZero() = true, want false")
+	}
+
+	// Obscured should appear in JSON
+	w = wrapper{}
+	w.Location, _ = coords.NewWorldMapCoord("## 1508")
+	data, _ = json.Marshal(w)
+	if string(data) != `{"location":"## 1508"}` {
+		t.Errorf("obscured: got %s, want %s", data, `{"location":"## 1508"}`)
 	}
 }

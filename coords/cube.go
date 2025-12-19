@@ -150,22 +150,27 @@ const (
 //
 // # Invariants
 //
-// There are three special coordinate states that require careful handling:
+// There are four coordinate states:
 //
-//  1. Zero-value: A WorldMapCoord with id == "" represents an uninitialized coordinate.
-//     ID() returns "N/A" for zero-values to ensure safe JSON marshalling.
+//  1. Zero-value (id == ""): Uninitialized coordinate. The report never assigned a location.
+//     IsZero() returns true, MarshalJSON returns "null", and fields tagged with
+//     `json:",omitzero"` will be omitted from JSON output.
 //
-//  2. N/A coordinates: Created via NewWorldMapCoord("N/A"), these represent explicitly
-//     unknown or not-applicable locations. The cube coordinates are (0,0,0), but ID()
-//     preserves "N/A" rather than converting to "AA 0101".
+//  2. N/A (id == "N/A"): The report explicitly assigned N/A to the unit.
+//     Created via NewWorldMapCoord("N/A"). The cube coordinates are (0,0,0), but ID()
+//     preserves "N/A" rather than converting to "AA 0101". MarshalJSON returns "N/A".
 //
-//  3. Obscured coordinates: Created via NewWorldMapCoord("## XXYY"), these represent
-//     coordinates where the grid is hidden. Internally mapped to "QQ" for cube math,
-//     but ID() preserves the original "## XXYY" format.
+//  3. Obscured (id == "## XXYY"): The report assigned an obscured location.
+//     Created via NewWorldMapCoord("## XXYY"). Internally mapped to "QQ" for cube math,
+//     but ID() and MarshalJSON preserve the original "## XXYY" format.
+//
+//  4. Valid (id == "AB XXYY"): The report assigned a valid location.
+//     ID() and MarshalJSON return the coordinate string.
+//
+// The distinction between zero-value and N/A may matter for database storage (NULL vs "N/A").
 //
 // The String() method always calculates coordinates from cube values (for debugging).
 // The ID() method preserves special values and should be used for display and JSON.
-// MarshalJSON uses ID() to ensure round-trip fidelity for special coordinates.
 type WorldMapCoord struct {
 	id   string
 	cube CubeCoord
@@ -381,8 +386,17 @@ func (c WorldMapCoord) String() string {
 	return fmt.Sprintf("%c%c %s%s", gridRowCode, gridColumnCode, subGridColumnCode, subGridRowCode)
 }
 
+// IsZero reports whether c is the zero value (uninitialized).
+// Used by encoding/json for omitempty behavior.
+func (c WorldMapCoord) IsZero() bool {
+	return c.id == ""
+}
+
 // MarshalJSON implements the json.Marshaler interface.
 func (c WorldMapCoord) MarshalJSON() ([]byte, error) {
+	if c.id == "" {
+		return []byte("null"), nil
+	}
 	return []byte(fmt.Sprintf("%q", c.ID())), nil
 }
 
