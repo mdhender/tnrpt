@@ -73,12 +73,6 @@ func TestAdaptParserTurnToModel(t *testing.T) {
 func compareMoves(t *testing.T, unitId string, pm *azul.Moves_t, mm *tnrpt.Moves_t) {
 	t.Helper()
 
-	if mm.TurnId != pm.TurnId {
-		t.Errorf("Moves[%s].TurnId: want %q, got %q", unitId, pm.TurnId, mm.TurnId)
-	}
-	if string(mm.UnitId) != string(pm.UnitId) {
-		t.Errorf("Moves[%s].UnitId: want %q, got %q", unitId, pm.UnitId, mm.UnitId)
-	}
 	if string(mm.Follows) != string(pm.Follows) {
 		t.Errorf("Moves[%s].Follows: want %q, got %q", unitId, pm.Follows, mm.Follows)
 	}

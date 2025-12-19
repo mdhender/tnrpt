@@ -1,24 +1,24 @@
-Tribe 0987, , Current Hex = QQ 1010, (Previous Hex = 11 1010)
+Tribe 0987, , Current Hex = QQ 1010, (Previous Hex = QQ 1010)
 Current Turn 900-01 (#1), Winter, FINE Next Turn 900-02 (#2), 15/12/2025
 
 0987 Status: PRAIRIE, L NW 0987 0987c1 0987e1 0987f1 0987g1
 
-Courier 0987c1, , Current Hex = QQ 1010, (Previous Hex = 11 1010)
+Courier 0987c1, , Current Hex = QQ 1010, (Previous Hex = QQ 1010)
 Current Turn 900-01 (#1), Winter, FINE
 
 0987c1 Status: PRAIRIE, L NW 0987 0987c1 0987e1 0987f1 0987g1
 
-Element 0987e1, , Current Hex = QQ 1010, (Previous Hex = 11 1010)
+Element 0987e1, , Current Hex = QQ 1010, (Previous Hex = QQ 1010)
 Current Turn 900-01 (#1), Winter, FINE
 
 0987e1 Status: PRAIRIE, L NW 0987 0987c1 0987e1 0987f1 0987g1
 
-Fleet 0987f1, , Current Hex = QQ 1010, (Previous Hex = 11 1010)
+Fleet 0987f1, , Current Hex = QQ 1010, (Previous Hex = QQ 1010)
 Current Turn 900-01 (#1), Winter, FINE
 
 0987f1 Status: PRAIRIE, L NW 0987 0987c1 0987e1 0987f1 0987g1
 
-Garrison 0987g1, , Current Hex = QQ 1010, (Previous Hex = 11 1010)
+Garrison 0987g1, , Current Hex = QQ 1010, (Previous Hex = QQ 1010)
 Current Turn 900-01 (#1), Winter, FINE
 
 0987g1 Status: PRAIRIE, L NW 0987 0987c1 0987e1 0987f1 0987g1

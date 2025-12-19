@@ -4,7 +4,6 @@ package tnrpt
 
 import (
 	"github.com/mdhender/tnrpt/compass"
-	"github.com/mdhender/tnrpt/coords"
 	"github.com/mdhender/tnrpt/direction"
 	"github.com/mdhender/tnrpt/edges"
 	"github.com/mdhender/tnrpt/items"
@@ -41,27 +40,24 @@ type UnitId_t string
 // Moves_t represents the results for a unit that moves and reports in a turn.
 // There will be one instance of this struct for each turn the unit moves in.
 type Moves_t struct {
-	TurnId string   `json:"turn-id,omitempty"`
 	UnitId UnitId_t `json:"unit-id,omitempty"`
 
 	// PreviousHex is the hex the unit starts the move in.
 	// This could be "N/A" if the unit was created this turn.
 	// In that case, we will populate it when we know where the unit started.
-	PreviousHex         string               `json:"previous-hex,omitempty"`
-	PreviousCoordinates coords.WorldMapCoord `json:"previous-coordinates,omitzero"`
+	PreviousHex string `json:"previous-hex,omitempty"`
 
 	// CurrentHex is the hex is unit ends the movement in.
 	// This should always be set from the turn report.
 	// It might be the same as the PreviousHex if the unit stays in place or fails to move.
-	CurrentHex         string               `json:"current-hex,omitempty"`
-	CurrentCoordinates coords.WorldMapCoord `json:"current-coordinates,omitzero"`
+	CurrentHex string `json:"current-hex,omitempty"`
 
 	// all the moves made this turn
 	Moves   []*Move_t `json:"moves,omitempty"`
 	Follows UnitId_t  `json:"follows,omitempty"`
 	GoesTo  string    `json:"goes-to,omitempty"`
 
-	// all the scry results for this turn
+	// Scries are optional; these are the results
 	Scries []*Scry_t `json:"scries,omitempty"`
 
 	// Scouts are optional and move at the end of the turn
@@ -76,34 +72,28 @@ type Move_t struct {
 	StepNo int    `json:"step-no,omitempty"`
 	Line   string `json:"line,omitempty"`
 
-	TurnId string   `json:"turn-id,omitempty"`
-	UnitId UnitId_t `json:"unit-id,omitempty"`
-
-	FromCoordinates coords.WorldMapCoord `json:"from-coordinates,omitzero"`
-	ToCoordinates   coords.WorldMapCoord `json:"to-coordinates,omitzero"`
-
 	// the types of movement that a unit can make.
-	Advance direction.Direction_e `json:"advance,omitempty"`
-	Follows UnitId_t              `json:"follows,omitempty"`
-	GoesTo  string                `json:"goes-to,omitempty"`
-	Still   bool                  `json:"still,omitempty"`
+	Advance   direction.Direction_e `json:"advance,omitempty"`
+	Follows   UnitId_t              `json:"follows,omitempty"`
+	GoesToHex string                `json:"goes-to-hex,omitempty"`
+	Still     bool                  `json:"still,omitempty"`
 
 	// Result should be failed, succeeded, or vanished
 	Result results.Result_e `json:"result,omitempty"`
 
 	Report *Report_t `json:"report,omitempty"`
-
-	CurrentHex string `json:"current-hex,omitempty"`
 }
 
 type Scry_t struct {
-	UnitId      UnitId_t             `json:"unit-id,omitempty"`
-	Type        unit_movement.Type_e `json:"type,omitempty"`
-	Origin      string               `json:"origin,omitempty"`
-	Coordinates coords.WorldMapCoord `json:"coordinates,omitzero"`
-	Text        string               `json:"text,omitempty"`
-	Moves       []*Move_t            `json:"moves,omitempty"`
-	Scouts      *Scout_t             `json:"scouts,omitempty"`
+	Text string `json:"text,omitempty"`
+
+	// OriginHex is the location that was scried.
+	OriginHex string `json:"origin-hex,omitempty"`
+
+	Type unit_movement.Type_e `json:"type,omitempty"`
+
+	Moves  []*Move_t `json:"moves,omitempty"`
+	Scouts *Scout_t  `json:"scouts,omitempty"`
 }
 
 // Scout_t represents a scout sent out by a unit.
@@ -111,8 +101,7 @@ type Scout_t struct {
 	LineNo int    `json:"line-no,omitempty"`
 	Line   string `json:"line,omitempty"`
 
-	TurnId string `json:"turn-id,omitempty"`
-	No     int    `json:"no,omitempty"`
+	No int `json:"no,omitempty"`
 
 	Moves []*Move_t `json:"moves,omitempty"`
 }
@@ -120,10 +109,6 @@ type Scout_t struct {
 // Report_t represents the observations made by a unit.
 // All reports are relative to the hex that the unit is reporting from.
 type Report_t struct {
-	TurnId        string   `json:"turn-id,omitempty"`
-	UnitId        UnitId_t `json:"unit-id,omitempty"`
-	ScoutedTurnId string   `json:"scouted-turn-id,omitempty"`
-
 	// permanent items in this hex
 	Terrain terrain.Terrain_e `json:"terrain,omitempty"`
 	Borders []*Border_t       `json:"borders,omitempty"`
@@ -134,9 +119,6 @@ type Report_t struct {
 	Resources   []resources.Resource_e `json:"resources,omitempty"`
 	Settlements []*Settlement_t        `json:"settlements,omitempty"`
 	FarHorizons []*FarHorizon_t        `json:"far-horizons,omitempty"`
-
-	WasVisited bool `json:"was-visited,omitempty"`
-	WasScouted bool `json:"was-scouted,omitempty"`
 }
 
 // Border_t represents details about the hex border.
@@ -149,7 +131,6 @@ type Border_t struct {
 }
 
 type Encounter_t struct {
-	TurnId   string   `json:"turn-id,omitempty"`
 	UnitId   UnitId_t `json:"unit-id,omitempty"`
 	Friendly bool     `json:"friendly,omitempty"`
 }
@@ -162,8 +143,7 @@ type FoundItem_t struct {
 
 // Settlement_t is a settlement that the unit sees in the current hex.
 type Settlement_t struct {
-	TurnId string `json:"turn-id,omitempty"`
-	Name   string `json:"name,omitempty"`
+	Name string `json:"name,omitempty"`
 }
 
 type FarHorizon_t struct {
@@ -172,7 +152,6 @@ type FarHorizon_t struct {
 }
 
 type Special_t struct {
-	TurnId string `json:"turn-id,omitempty"`
-	Id     string `json:"id,omitempty"`
-	Name   string `json:"name,omitempty"`
+	Id   string `json:"id,omitempty"`
+	Name string `json:"name,omitempty"`
 }
