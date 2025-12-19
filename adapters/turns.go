@@ -6,7 +6,6 @@ import (
 	"path/filepath"
 
 	"github.com/mdhender/tnrpt"
-	"github.com/mdhender/tnrpt/coords"
 	"github.com/mdhender/tnrpt/parsers/azul"
 )
 
@@ -27,9 +26,8 @@ func AdaptParserTurnToModel(source string, pt *azul.Turn_t) (*tnrpt.Turn_t, erro
 
 	for k, v := range pt.SpecialNames {
 		mt.SpecialNames[k] = &tnrpt.Special_t{
-			TurnId: v.TurnId,
-			Id:     v.Id,
-			Name:   v.Name,
+			Id:   v.Id,
+			Name: v.Name,
 		}
 	}
 
@@ -41,18 +39,11 @@ func adaptParserMoves(pm *azul.Moves_t) *tnrpt.Moves_t {
 		return nil
 	}
 	mm := &tnrpt.Moves_t{
-		TurnId:      pm.TurnId,
 		UnitId:      tnrpt.UnitId_t(pm.UnitId),
 		Follows:     tnrpt.UnitId_t(pm.Follows),
 		GoesTo:      pm.GoesTo,
 		PreviousHex: pm.PreviousHex,
 		CurrentHex:  pm.CurrentHex,
-	}
-	if pm.PreviousHex != "" {
-		mm.PreviousCoordinates, _ = coords.NewWorldMapCoord(pm.PreviousHex)
-	}
-	if pm.CurrentHex != "" {
-		mm.CurrentCoordinates, _ = coords.NewWorldMapCoord(pm.CurrentHex)
 	}
 
 	for _, v := range pm.Moves {
@@ -75,20 +66,15 @@ func adaptParserMove(pm *azul.Move_t) *tnrpt.Move_t {
 		return nil
 	}
 	return &tnrpt.Move_t{
-		UnitId:          tnrpt.UnitId_t(pm.UnitId),
-		Advance:         pm.Advance,
-		Follows:         tnrpt.UnitId_t(pm.Follows),
-		GoesTo:          pm.GoesTo,
-		Still:           pm.Still,
-		Result:          pm.Result,
-		Report:          adaptParserReport(pm.Report),
-		LineNo:          pm.LineNo,
-		StepNo:          pm.StepNo,
-		Line:            string(pm.Line),
-		TurnId:          pm.TurnId,
-		CurrentHex:      pm.CurrentHex,
-		FromCoordinates: pm.FromCoordinates,
-		ToCoordinates:   pm.ToCoordinates,
+		Advance:   pm.Advance,
+		Follows:   tnrpt.UnitId_t(pm.Follows),
+		GoesToHex: pm.GoesTo,
+		Still:     pm.Still,
+		Result:    pm.Result,
+		Report:    adaptParserReport(pm.Report),
+		LineNo:    pm.LineNo,
+		StepNo:    pm.StepNo,
+		Line:      string(pm.Line),
 	}
 }
 
@@ -97,12 +83,10 @@ func adaptParserScry(ps *azul.Scry_t) *tnrpt.Scry_t {
 		return nil
 	}
 	ms := &tnrpt.Scry_t{
-		UnitId:      tnrpt.UnitId_t(ps.UnitId),
-		Type:        ps.Type,
-		Origin:      ps.Origin,
-		Coordinates: ps.Coordinates,
-		Text:        string(ps.Text),
-		Scouts:      adaptParserScout(ps.Scouts),
+		Type:      ps.Type,
+		OriginHex: ps.Origin,
+		Text:      string(ps.Text),
+		Scouts:    adaptParserScout(ps.Scouts),
 	}
 
 	for _, v := range ps.Moves {
@@ -118,7 +102,6 @@ func adaptParserScout(ps *azul.Scout_t) *tnrpt.Scout_t {
 	}
 	ms := &tnrpt.Scout_t{
 		No:     ps.No,
-		TurnId: ps.TurnId,
 		LineNo: ps.LineNo,
 		Line:   string(ps.Line),
 	}
@@ -135,13 +118,8 @@ func adaptParserReport(pr *azul.Report_t) *tnrpt.Report_t {
 		return nil
 	}
 	mr := &tnrpt.Report_t{
-		UnitId:        tnrpt.UnitId_t(pr.UnitId),
-		TurnId:        pr.TurnId,
-		ScoutedTurnId: pr.ScoutedTurnId,
-		Terrain:       pr.Terrain,
-		Resources:     pr.Resources,
-		WasVisited:    pr.WasVisited,
-		WasScouted:    pr.WasScouted,
+		Terrain:   pr.Terrain,
+		Resources: pr.Resources,
 	}
 
 	for _, v := range pr.Borders {
@@ -183,7 +161,6 @@ func adaptParserEncounter(pe *azul.Encounter_t) *tnrpt.Encounter_t {
 		return nil
 	}
 	return &tnrpt.Encounter_t{
-		TurnId:   pe.TurnId,
 		UnitId:   tnrpt.UnitId_t(pe.UnitId),
 		Friendly: pe.Friendly,
 	}
@@ -204,8 +181,7 @@ func adaptParserSettlement(ps *azul.Settlement_t) *tnrpt.Settlement_t {
 		return nil
 	}
 	return &tnrpt.Settlement_t{
-		TurnId: ps.TurnId,
-		Name:   ps.Name,
+		Name: ps.Name,
 	}
 }
 

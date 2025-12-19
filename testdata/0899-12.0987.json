@@ -1,23 +1,21 @@
 {
-  "id": "0899-12",
+  "source": "testdata/0899-12.0987.report.txt",
+  "turn-id": "0899-12",
   "year": 899,
   "month": 12,
   "unit-moves": {
     "0987": {
-      "turn-id": "0899-12",
       "unit-id": "0987",
+      "previous-hex": "QQ 1010",
+      "current-hex": "QQ 1010",
       "moves": [
         {
-          "unit-id": "0987",
+          "line-no": 13,
+          "step-no": 1,
+          "line": "PRAIRIE, L NW,0987",
           "still": true,
           "result": "Status Line",
           "report": {
-            "unit-id": "0987",
-            "location": {
-              "Column": 0,
-              "Row": 0
-            },
-            "turn-id": "0899-12",
             "terrain": "PR",
             "borders": [
               {
@@ -27,39 +25,25 @@
             ],
             "encounters": [
               {
-                "turn-id": "0899-12",
                 "unit-id": "0987"
               }
             ]
-          },
-          "line-no": 13,
-          "step-no": 1,
-          "line": "UFJBSVJJRSwgTCBOVywwOTg3",
-          "turn-id": "0899-12",
-          "from-coordinates": "AA 0101",
-          "to-coordinates": "AA 0101",
-          "location": {
-            "Column": 0,
-            "Row": 0
           }
         }
       ],
       "scouts": [
         {
+          "line-no": 4,
+          "line": "Scout 1:Scout ,Can't Move on Lake to NW of HEX, Nothing of interest found",
           "no": 1,
-          "turn-id": "0899-12",
           "moves": [
             {
-              "unit-id": "0987",
+              "line-no": 4,
+              "step-no": 1,
+              "line": ",Can't Move on Lake to NW of HEX, Nothing of interest found",
               "advance": "NW",
               "result": "Failed",
               "report": {
-                "unit-id": "0987",
-                "location": {
-                  "Column": 0,
-                  "Row": 0
-                },
-                "turn-id": "0899-12",
                 "scouted-turn-id": "0899-12",
                 "borders": [
                   {
@@ -67,36 +51,22 @@
                     "terrain": "L"
                   }
                 ]
-              },
-              "line-no": 4,
-              "step-no": 1,
-              "line": "LENhbid0IE1vdmUgb24gTGFrZSB0byBOVyBvZiBIRVgsIE5vdGhpbmcgb2YgaW50ZXJlc3QgZm91bmQ=",
-              "from-coordinates": "AA 0101",
-              "to-coordinates": "AA 0101",
-              "location": {
-                "Column": 0,
-                "Row": 0
               }
             }
-          ],
-          "line-no": 4,
-          "line": "U2NvdXQgMTpTY291dCAsQ2FuJ3QgTW92ZSBvbiBMYWtlIHRvIE5XIG9mIEhFWCwgTm90aGluZyBvZiBpbnRlcmVzdCBmb3VuZA=="
+          ]
         },
         {
+          "line-no": 5,
+          "line": "Scout 2:Scout N-PR, , L SW,River N NE\\NW-PR, , L SW, S,Ford NE\\NW-GH, , L S\\,Not enough M.P's to move to NE into CONIFER HILLS, Nothing of interest found",
           "no": 2,
-          "turn-id": "0899-12",
           "moves": [
             {
-              "unit-id": "0987",
+              "line-no": 5,
+              "step-no": 1,
+              "line": "N-PR, , L SW,River N NE",
               "advance": "N",
               "result": "Succeeded",
               "report": {
-                "unit-id": "0987",
-                "location": {
-                  "Column": 0,
-                  "Row": 0
-                },
-                "turn-id": "0899-12",
                 "scouted-turn-id": "0899-12",
                 "terrain": "PR",
                 "borders": [
@@ -113,28 +83,15 @@
                     "terrain": "L"
                   }
                 ]
-              },
-              "line-no": 5,
-              "step-no": 1,
-              "line": "Ti1QUiwgLCBMIFNXLFJpdmVyIE4gTkU=",
-              "from-coordinates": "AA 0101",
-              "to-coordinates": "AA 0101",
-              "location": {
-                "Column": 0,
-                "Row": 0
               }
             },
             {
-              "unit-id": "0987",
+              "line-no": 5,
+              "step-no": 2,
+              "line": "NW-PR, , L SW, S,Ford NE",
               "advance": "NW",
               "result": "Succeeded",
               "report": {
-                "unit-id": "0987",
-                "location": {
-                  "Column": 0,
-                  "Row": 0
-                },
-                "turn-id": "0899-12",
                 "scouted-turn-id": "0899-12",
                 "terrain": "PR",
                 "borders": [
@@ -151,28 +108,15 @@
                     "terrain": "L"
                   }
                 ]
-              },
-              "line-no": 5,
-              "step-no": 2,
-              "line": "TlctUFIsICwgTCBTVywgUyxGb3JkIE5F",
-              "from-coordinates": "AA 0101",
-              "to-coordinates": "AA 0101",
-              "location": {
-                "Column": 0,
-                "Row": 0
               }
             },
             {
-              "unit-id": "0987",
+              "line-no": 5,
+              "step-no": 3,
+              "line": "NW-GH, , L S",
               "advance": "NW",
               "result": "Succeeded",
               "report": {
-                "unit-id": "0987",
-                "location": {
-                  "Column": 0,
-                  "Row": 0
-                },
-                "turn-id": "0899-12",
                 "scouted-turn-id": "0899-12",
                 "terrain": "GH",
                 "borders": [
@@ -181,28 +125,15 @@
                     "terrain": "L"
                   }
                 ]
-              },
-              "line-no": 5,
-              "step-no": 3,
-              "line": "TlctR0gsICwgTCBT",
-              "from-coordinates": "AA 0101",
-              "to-coordinates": "AA 0101",
-              "location": {
-                "Column": 0,
-                "Row": 0
               }
             },
             {
-              "unit-id": "0987",
+              "line-no": 5,
+              "step-no": 4,
+              "line": ",Not enough M.P's to move to NE into CONIFER HILLS, Nothing of interest found",
               "advance": "NE",
               "result": "Failed",
               "report": {
-                "unit-id": "0987",
-                "location": {
-                  "Column": 0,
-                  "Row": 0
-                },
-                "turn-id": "0899-12",
                 "scouted-turn-id": "0899-12",
                 "borders": [
                   {
@@ -210,36 +141,22 @@
                     "terrain": "CH"
                   }
                 ]
-              },
-              "line-no": 5,
-              "step-no": 4,
-              "line": "LE5vdCBlbm91Z2ggTS5QJ3MgdG8gbW92ZSB0byBORSBpbnRvIENPTklGRVIgSElMTFMsIE5vdGhpbmcgb2YgaW50ZXJlc3QgZm91bmQ=",
-              "from-coordinates": "AA 0101",
-              "to-coordinates": "AA 0101",
-              "location": {
-                "Column": 0,
-                "Row": 0
               }
             }
-          ],
-          "line-no": 5,
-          "line": "U2NvdXQgMjpTY291dCBOLVBSLCAsIEwgU1csUml2ZXIgTiBORVxOVy1QUiwgLCBMIFNXLCBTLEZvcmQgTkVcTlctR0gsICwgTCBTXCxOb3QgZW5vdWdoIE0uUCdzIHRvIG1vdmUgdG8gTkUgaW50byBDT05JRkVSIEhJTExTLCBOb3RoaW5nIG9mIGludGVyZXN0IGZvdW5k"
+          ]
         },
         {
+          "line-no": 6,
+          "line": "Scout 3:Scout N-PR, , L SW,River N NE\\,No Ford on River to N of HEX, Nothing of interest found",
           "no": 3,
-          "turn-id": "0899-12",
           "moves": [
             {
-              "unit-id": "0987",
+              "line-no": 6,
+              "step-no": 1,
+              "line": "N-PR, , L SW,River N NE",
               "advance": "N",
               "result": "Succeeded",
               "report": {
-                "unit-id": "0987",
-                "location": {
-                  "Column": 0,
-                  "Row": 0
-                },
-                "turn-id": "0899-12",
                 "scouted-turn-id": "0899-12",
                 "terrain": "PR",
                 "borders": [
@@ -256,28 +173,15 @@
                     "terrain": "L"
                   }
                 ]
-              },
-              "line-no": 6,
-              "step-no": 1,
-              "line": "Ti1QUiwgLCBMIFNXLFJpdmVyIE4gTkU=",
-              "from-coordinates": "AA 0101",
-              "to-coordinates": "AA 0101",
-              "location": {
-                "Column": 0,
-                "Row": 0
               }
             },
             {
-              "unit-id": "0987",
+              "line-no": 6,
+              "step-no": 2,
+              "line": ",No Ford on River to N of HEX, Nothing of interest found",
               "advance": "N",
               "result": "Failed",
               "report": {
-                "unit-id": "0987",
-                "location": {
-                  "Column": 0,
-                  "Row": 0
-                },
-                "turn-id": "0899-12",
                 "scouted-turn-id": "0899-12",
                 "borders": [
                   {
@@ -285,36 +189,22 @@
                     "edge": "River"
                   }
                 ]
-              },
-              "line-no": 6,
-              "step-no": 2,
-              "line": "LE5vIEZvcmQgb24gUml2ZXIgdG8gTiBvZiBIRVgsIE5vdGhpbmcgb2YgaW50ZXJlc3QgZm91bmQ=",
-              "from-coordinates": "AA 0101",
-              "to-coordinates": "AA 0101",
-              "location": {
-                "Column": 0,
-                "Row": 0
               }
             }
-          ],
-          "line-no": 6,
-          "line": "U2NvdXQgMzpTY291dCBOLVBSLCAsIEwgU1csUml2ZXIgTiBORVwsTm8gRm9yZCBvbiBSaXZlciB0byBOIG9mIEhFWCwgTm90aGluZyBvZiBpbnRlcmVzdCBmb3VuZA=="
+          ]
         },
         {
+          "line-no": 7,
+          "line": "Scout 4:Scout NE-PR, ,River N NE\\,No Ford on River to N of HEX, Nothing of interest found",
           "no": 4,
-          "turn-id": "0899-12",
           "moves": [
             {
-              "unit-id": "0987",
+              "line-no": 7,
+              "step-no": 1,
+              "line": "NE-PR, ,River N NE",
               "advance": "NE",
               "result": "Succeeded",
               "report": {
-                "unit-id": "0987",
-                "location": {
-                  "Column": 0,
-                  "Row": 0
-                },
-                "turn-id": "0899-12",
                 "scouted-turn-id": "0899-12",
                 "terrain": "PR",
                 "borders": [
@@ -327,28 +217,15 @@
                     "edge": "River"
                   }
                 ]
-              },
-              "line-no": 7,
-              "step-no": 1,
-              "line": "TkUtUFIsICxSaXZlciBOIE5F",
-              "from-coordinates": "AA 0101",
-              "to-coordinates": "AA 0101",
-              "location": {
-                "Column": 0,
-                "Row": 0
               }
             },
             {
-              "unit-id": "0987",
+              "line-no": 7,
+              "step-no": 2,
+              "line": ",No Ford on River to N of HEX, Nothing of interest found",
               "advance": "N",
               "result": "Failed",
               "report": {
-                "unit-id": "0987",
-                "location": {
-                  "Column": 0,
-                  "Row": 0
-                },
-                "turn-id": "0899-12",
                 "scouted-turn-id": "0899-12",
                 "borders": [
                   {
@@ -356,36 +233,22 @@
                     "edge": "River"
                   }
                 ]
-              },
-              "line-no": 7,
-              "step-no": 2,
-              "line": "LE5vIEZvcmQgb24gUml2ZXIgdG8gTiBvZiBIRVgsIE5vdGhpbmcgb2YgaW50ZXJlc3QgZm91bmQ=",
-              "from-coordinates": "AA 0101",
-              "to-coordinates": "AA 0101",
-              "location": {
-                "Column": 0,
-                "Row": 0
               }
             }
-          ],
-          "line-no": 7,
-          "line": "U2NvdXQgNDpTY291dCBORS1QUiwgLFJpdmVyIE4gTkVcLE5vIEZvcmQgb24gUml2ZXIgdG8gTiBvZiBIRVgsIE5vdGhpbmcgb2YgaW50ZXJlc3QgZm91bmQ="
+          ]
         },
         {
+          "line-no": 8,
+          "line": "Scout 5:Scout SE-PR, , O SE\\,Not enough M.P's to move to NE into SWAMP, Nothing of interest found",
           "no": 5,
-          "turn-id": "0899-12",
           "moves": [
             {
-              "unit-id": "0987",
+              "line-no": 8,
+              "step-no": 1,
+              "line": "SE-PR, , O SE",
               "advance": "SE",
               "result": "Succeeded",
               "report": {
-                "unit-id": "0987",
-                "location": {
-                  "Column": 0,
-                  "Row": 0
-                },
-                "turn-id": "0899-12",
                 "scouted-turn-id": "0899-12",
                 "terrain": "PR",
                 "borders": [
@@ -394,28 +257,15 @@
                     "terrain": "O"
                   }
                 ]
-              },
-              "line-no": 8,
-              "step-no": 1,
-              "line": "U0UtUFIsICwgTyBTRQ==",
-              "from-coordinates": "AA 0101",
-              "to-coordinates": "AA 0101",
-              "location": {
-                "Column": 0,
-                "Row": 0
               }
             },
             {
-              "unit-id": "0987",
+              "line-no": 8,
+              "step-no": 2,
+              "line": ",Not enough M.P's to move to NE into SWAMP, Nothing of interest found",
               "advance": "NE",
               "result": "Failed",
               "report": {
-                "unit-id": "0987",
-                "location": {
-                  "Column": 0,
-                  "Row": 0
-                },
-                "turn-id": "0899-12",
                 "scouted-turn-id": "0899-12",
                 "borders": [
                   {
@@ -423,36 +273,22 @@
                     "terrain": "SW"
                   }
                 ]
-              },
-              "line-no": 8,
-              "step-no": 2,
-              "line": "LE5vdCBlbm91Z2ggTS5QJ3MgdG8gbW92ZSB0byBORSBpbnRvIFNXQU1QLCBOb3RoaW5nIG9mIGludGVyZXN0IGZvdW5k",
-              "from-coordinates": "AA 0101",
-              "to-coordinates": "AA 0101",
-              "location": {
-                "Column": 0,
-                "Row": 0
               }
             }
-          ],
-          "line-no": 8,
-          "line": "U2NvdXQgNTpTY291dCBTRS1QUiwgLCBPIFNFXCxOb3QgZW5vdWdoIE0uUCdzIHRvIG1vdmUgdG8gTkUgaW50byBTV0FNUCwgTm90aGluZyBvZiBpbnRlcmVzdCBmb3VuZA=="
+          ]
         },
         {
+          "line-no": 9,
+          "line": "Scout 6:Scout S-GH, , L SW\\SE-PR, , O NE, SE, S\\,Can't Move on Ocean to SE of HEX, Nothing of interest found",
           "no": 6,
-          "turn-id": "0899-12",
           "moves": [
             {
-              "unit-id": "0987",
+              "line-no": 9,
+              "step-no": 1,
+              "line": "S-GH, , L SW",
               "advance": "S",
               "result": "Succeeded",
               "report": {
-                "unit-id": "0987",
-                "location": {
-                  "Column": 0,
-                  "Row": 0
-                },
-                "turn-id": "0899-12",
                 "scouted-turn-id": "0899-12",
                 "terrain": "GH",
                 "borders": [
@@ -461,28 +297,15 @@
                     "terrain": "L"
                   }
                 ]
-              },
-              "line-no": 9,
-              "step-no": 1,
-              "line": "Uy1HSCwgLCBMIFNX",
-              "from-coordinates": "AA 0101",
-              "to-coordinates": "AA 0101",
-              "location": {
-                "Column": 0,
-                "Row": 0
               }
             },
             {
-              "unit-id": "0987",
+              "line-no": 9,
+              "step-no": 2,
+              "line": "SE-PR, , O NE, SE, S",
               "advance": "SE",
               "result": "Succeeded",
               "report": {
-                "unit-id": "0987",
-                "location": {
-                  "Column": 0,
-                  "Row": 0
-                },
-                "turn-id": "0899-12",
                 "scouted-turn-id": "0899-12",
                 "terrain": "PR",
                 "borders": [
@@ -499,28 +322,15 @@
                     "terrain": "O"
                   }
                 ]
-              },
-              "line-no": 9,
-              "step-no": 2,
-              "line": "U0UtUFIsICwgTyBORSwgU0UsIFM=",
-              "from-coordinates": "AA 0101",
-              "to-coordinates": "AA 0101",
-              "location": {
-                "Column": 0,
-                "Row": 0
               }
             },
             {
-              "unit-id": "0987",
+              "line-no": 9,
+              "step-no": 3,
+              "line": ",Can't Move on Ocean to SE of HEX, Nothing of interest found",
               "advance": "SE",
               "result": "Failed",
               "report": {
-                "unit-id": "0987",
-                "location": {
-                  "Column": 0,
-                  "Row": 0
-                },
-                "turn-id": "0899-12",
                 "scouted-turn-id": "0899-12",
                 "borders": [
                   {
@@ -528,36 +338,22 @@
                     "terrain": "O"
                   }
                 ]
-              },
-              "line-no": 9,
-              "step-no": 3,
-              "line": "LENhbid0IE1vdmUgb24gT2NlYW4gdG8gU0Ugb2YgSEVYLCBOb3RoaW5nIG9mIGludGVyZXN0IGZvdW5k",
-              "from-coordinates": "AA 0101",
-              "to-coordinates": "AA 0101",
-              "location": {
-                "Column": 0,
-                "Row": 0
               }
             }
-          ],
-          "line-no": 9,
-          "line": "U2NvdXQgNjpTY291dCBTLUdILCAsIEwgU1dcU0UtUFIsICwgTyBORSwgU0UsIFNcLENhbid0IE1vdmUgb24gT2NlYW4gdG8gU0Ugb2YgSEVYLCBOb3RoaW5nIG9mIGludGVyZXN0IGZvdW5k"
+          ]
         },
         {
+          "line-no": 10,
+          "line": "Scout 7:Scout S-GH, , L SW\\S-PR, , O SE, L NW\\S-PR, , O NE, SE, L SW\\,Not enough M.P's to move to NW into GRASSY HILLS, Nothing of interest found",
           "no": 7,
-          "turn-id": "0899-12",
           "moves": [
             {
-              "unit-id": "0987",
+              "line-no": 10,
+              "step-no": 1,
+              "line": "S-GH, , L SW",
               "advance": "S",
               "result": "Succeeded",
               "report": {
-                "unit-id": "0987",
-                "location": {
-                  "Column": 0,
-                  "Row": 0
-                },
-                "turn-id": "0899-12",
                 "scouted-turn-id": "0899-12",
                 "terrain": "GH",
                 "borders": [
@@ -566,28 +362,15 @@
                     "terrain": "L"
                   }
                 ]
-              },
-              "line-no": 10,
-              "step-no": 1,
-              "line": "Uy1HSCwgLCBMIFNX",
-              "from-coordinates": "AA 0101",
-              "to-coordinates": "AA 0101",
-              "location": {
-                "Column": 0,
-                "Row": 0
               }
             },
             {
-              "unit-id": "0987",
+              "line-no": 10,
+              "step-no": 2,
+              "line": "S-PR, , O SE, L NW",
               "advance": "S",
               "result": "Succeeded",
               "report": {
-                "unit-id": "0987",
-                "location": {
-                  "Column": 0,
-                  "Row": 0
-                },
-                "turn-id": "0899-12",
                 "scouted-turn-id": "0899-12",
                 "terrain": "PR",
                 "borders": [
@@ -600,28 +383,15 @@
                     "terrain": "L"
                   }
                 ]
-              },
-              "line-no": 10,
-              "step-no": 2,
-              "line": "Uy1QUiwgLCBPIFNFLCBMIE5X",
-              "from-coordinates": "AA 0101",
-              "to-coordinates": "AA 0101",
-              "location": {
-                "Column": 0,
-                "Row": 0
               }
             },
             {
-              "unit-id": "0987",
+              "line-no": 10,
+              "step-no": 3,
+              "line": "S-PR, , O NE, SE, L SW",
               "advance": "S",
               "result": "Succeeded",
               "report": {
-                "unit-id": "0987",
-                "location": {
-                  "Column": 0,
-                  "Row": 0
-                },
-                "turn-id": "0899-12",
                 "scouted-turn-id": "0899-12",
                 "terrain": "PR",
                 "borders": [
@@ -638,28 +408,15 @@
                     "terrain": "L"
                   }
                 ]
-              },
-              "line-no": 10,
-              "step-no": 3,
-              "line": "Uy1QUiwgLCBPIE5FLCBTRSwgTCBTVw==",
-              "from-coordinates": "AA 0101",
-              "to-coordinates": "AA 0101",
-              "location": {
-                "Column": 0,
-                "Row": 0
               }
             },
             {
-              "unit-id": "0987",
+              "line-no": 10,
+              "step-no": 4,
+              "line": ",Not enough M.P's to move to NW into GRASSY HILLS, Nothing of interest found",
               "advance": "NW",
               "result": "Failed",
               "report": {
-                "unit-id": "0987",
-                "location": {
-                  "Column": 0,
-                  "Row": 0
-                },
-                "turn-id": "0899-12",
                 "scouted-turn-id": "0899-12",
                 "borders": [
                   {
@@ -667,36 +424,22 @@
                     "terrain": "GH"
                   }
                 ]
-              },
-              "line-no": 10,
-              "step-no": 4,
-              "line": "LE5vdCBlbm91Z2ggTS5QJ3MgdG8gbW92ZSB0byBOVyBpbnRvIEdSQVNTWSBISUxMUywgTm90aGluZyBvZiBpbnRlcmVzdCBmb3VuZA==",
-              "from-coordinates": "AA 0101",
-              "to-coordinates": "AA 0101",
-              "location": {
-                "Column": 0,
-                "Row": 0
               }
             }
-          ],
-          "line-no": 10,
-          "line": "U2NvdXQgNzpTY291dCBTLUdILCAsIEwgU1dcUy1QUiwgLCBPIFNFLCBMIE5XXFMtUFIsICwgTyBORSwgU0UsIEwgU1dcLE5vdCBlbm91Z2ggTS5QJ3MgdG8gbW92ZSB0byBOVyBpbnRvIEdSQVNTWSBISUxMUywgTm90aGluZyBvZiBpbnRlcmVzdCBmb3VuZA=="
+          ]
         },
         {
+          "line-no": 11,
+          "line": "Scout 8:Scout SW-GH, , L SW, NW, N, S,Find Copper Ore\\,Can't Move on Lake to S of HEX, Nothing of interest found",
           "no": 8,
-          "turn-id": "0899-12",
           "moves": [
             {
-              "unit-id": "0987",
+              "line-no": 11,
+              "step-no": 1,
+              "line": "SW-GH, , L SW, NW, N, S,Find Copper Ore",
               "advance": "SW",
               "result": "Succeeded",
               "report": {
-                "unit-id": "0987",
-                "location": {
-                  "Column": 0,
-                  "Row": 0
-                },
-                "turn-id": "0899-12",
                 "scouted-turn-id": "0899-12",
                 "terrain": "GH",
                 "borders": [
@@ -720,28 +463,15 @@
                 "resources": [
                   "Copper Ore"
                 ]
-              },
-              "line-no": 11,
-              "step-no": 1,
-              "line": "U1ctR0gsICwgTCBTVywgTlcsIE4sIFMsRmluZCBDb3BwZXIgT3Jl",
-              "from-coordinates": "AA 0101",
-              "to-coordinates": "AA 0101",
-              "location": {
-                "Column": 0,
-                "Row": 0
               }
             },
             {
-              "unit-id": "0987",
+              "line-no": 11,
+              "step-no": 2,
+              "line": ",Can't Move on Lake to S of HEX, Nothing of interest found",
               "advance": "S",
               "result": "Failed",
               "report": {
-                "unit-id": "0987",
-                "location": {
-                  "Column": 0,
-                  "Row": 0
-                },
-                "turn-id": "0899-12",
                 "scouted-turn-id": "0899-12",
                 "borders": [
                   {
@@ -749,29 +479,71 @@
                     "terrain": "L"
                   }
                 ]
-              },
-              "line-no": 11,
-              "step-no": 2,
-              "line": "LENhbid0IE1vdmUgb24gTGFrZSB0byBTIG9mIEhFWCwgTm90aGluZyBvZiBpbnRlcmVzdCBmb3VuZA==",
-              "from-coordinates": "AA 0101",
-              "to-coordinates": "AA 0101",
-              "location": {
-                "Column": 0,
-                "Row": 0
               }
             }
-          ],
-          "line-no": 11,
-          "line": "U2NvdXQgODpTY291dCBTVy1HSCwgLCBMIFNXLCBOVywgTiwgUyxGaW5kIENvcHBlciBPcmVcLENhbid0IE1vdmUgb24gTGFrZSB0byBTIG9mIEhFWCwgTm90aGluZyBvZiBpbnRlcmVzdCBmb3VuZA=="
+          ]
+        }
+      ]
+    },
+    "1987": {
+      "unit-id": "1987",
+      "previous-hex": "QQ 1010",
+      "current-hex": "QQ 0909",
+      "moves": [
+        {
+          "line-no": 18,
+          "step-no": 1,
+          "line": "Tribe Goes to QQ 0909",
+          "goes-to-hex": "QQ 0909",
+          "report": {}
+        },
+        {
+          "line-no": 20,
+          "step-no": 1,
+          "line": "PRAIRIE, 1987e1",
+          "still": true,
+          "result": "Status Line",
+          "report": {
+            "terrain": "PR",
+            "encounters": [
+              {
+                "unit-id": "1987e1"
+              }
+            ]
+          }
         }
       ],
-      "from-hex": "QQ 1010",
-      "to-hex": "QQ 1010",
-      "coordinates": "AA 0101",
-      "location": {
-        "Column": 0,
-        "Row": 0
-      }
+      "goes-to": "QQ 0909"
+    },
+    "1987e1": {
+      "unit-id": "1987e1",
+      "previous-hex": "QQ 1010",
+      "current-hex": "QQ 0909",
+      "moves": [
+        {
+          "line-no": 25,
+          "step-no": 1,
+          "line": "Tribe Follows 1987",
+          "follows": "1987",
+          "report": {}
+        },
+        {
+          "line-no": 27,
+          "step-no": 1,
+          "line": "PRAIRIE, 1987",
+          "still": true,
+          "result": "Status Line",
+          "report": {
+            "terrain": "PR",
+            "encounters": [
+              {
+                "unit-id": "1987"
+              }
+            ]
+          }
+        }
+      ],
+      "follows": "1987"
     }
   }
 }

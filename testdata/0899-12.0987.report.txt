@@ -11,3 +11,17 @@ Scout 7:Scout S-GH, , L SW\S-PR, , O SE, L NW\S-PR, , O NE, SE, L SW\,Not enough
 Scout 8:Scout SW-GH, , L SW, NW, N, S,Find Copper Ore\,Can't Move on Lake to S of HEX, Nothing of interest found
 
 0987 Status: PRAIRIE, L NW 0987
+
+Tribe 1987, , Current Hex = QQ 0909, (Previous Hex = QQ 1010)
+Current Turn 899-12 (#0), Winter, FINE
+
+Tribe Goes to QQ 0909
+
+1987 Status: PRAIRIE, 1987e1
+
+Element 1987e1, , Current Hex = QQ 0909, (Previous Hex = QQ 1010)
+Current Turn 899-12 (#0), Winter, FINE
+
+Tribe Follows 1987
+
+1987e1 Status: PRAIRIE, 1987

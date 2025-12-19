@@ -1,0 +1,208 @@
+{
+  "source": "testdata/0900-01.0987.report.txt",
+  "turn-id": "0900-01",
+  "year": 900,
+  "month": 1,
+  "unit-moves": {
+    "0987": {
+      "unit-id": "0987",
+      "previous-hex": "QQ 1010",
+      "current-hex": "QQ 1010",
+      "moves": [
+        {
+          "line-no": 4,
+          "step-no": 1,
+          "line": "PRAIRIE, L NW,0987 0987c1 0987e1 0987f1 0987g1",
+          "still": true,
+          "result": "Status Line",
+          "report": {
+            "terrain": "PR",
+            "borders": [
+              {
+                "direction": "NW",
+                "terrain": "L"
+              }
+            ],
+            "encounters": [
+              {
+                "unit-id": "0987"
+              },
+              {
+                "unit-id": "0987c1"
+              },
+              {
+                "unit-id": "0987e1"
+              },
+              {
+                "unit-id": "0987f1"
+              },
+              {
+                "unit-id": "0987g1"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "0987c1": {
+      "unit-id": "0987c1",
+      "previous-hex": "QQ 1010",
+      "current-hex": "QQ 1010",
+      "moves": [
+        {
+          "line-no": 9,
+          "step-no": 1,
+          "line": "PRAIRIE, L NW,0987 0987c1 0987e1 0987f1 0987g1",
+          "still": true,
+          "result": "Status Line",
+          "report": {
+            "terrain": "PR",
+            "borders": [
+              {
+                "direction": "NW",
+                "terrain": "L"
+              }
+            ],
+            "encounters": [
+              {
+                "unit-id": "0987"
+              },
+              {
+                "unit-id": "0987c1"
+              },
+              {
+                "unit-id": "0987e1"
+              },
+              {
+                "unit-id": "0987f1"
+              },
+              {
+                "unit-id": "0987g1"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "0987e1": {
+      "unit-id": "0987e1",
+      "previous-hex": "QQ 1010",
+      "current-hex": "QQ 1010",
+      "moves": [
+        {
+          "line-no": 14,
+          "step-no": 1,
+          "line": "PRAIRIE, L NW,0987 0987c1 0987e1 0987f1 0987g1",
+          "still": true,
+          "result": "Status Line",
+          "report": {
+            "terrain": "PR",
+            "borders": [
+              {
+                "direction": "NW",
+                "terrain": "L"
+              }
+            ],
+            "encounters": [
+              {
+                "unit-id": "0987"
+              },
+              {
+                "unit-id": "0987c1"
+              },
+              {
+                "unit-id": "0987e1"
+              },
+              {
+                "unit-id": "0987f1"
+              },
+              {
+                "unit-id": "0987g1"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "0987f1": {
+      "unit-id": "0987f1",
+      "previous-hex": "QQ 1010",
+      "current-hex": "QQ 1010",
+      "moves": [
+        {
+          "line-no": 19,
+          "step-no": 1,
+          "line": "PRAIRIE, L NW,0987 0987c1 0987e1 0987f1 0987g1",
+          "still": true,
+          "result": "Status Line",
+          "report": {
+            "terrain": "PR",
+            "borders": [
+              {
+                "direction": "NW",
+                "terrain": "L"
+              }
+            ],
+            "encounters": [
+              {
+                "unit-id": "0987"
+              },
+              {
+                "unit-id": "0987c1"
+              },
+              {
+                "unit-id": "0987e1"
+              },
+              {
+                "unit-id": "0987f1"
+              },
+              {
+                "unit-id": "0987g1"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "0987g1": {
+      "unit-id": "0987g1",
+      "previous-hex": "QQ 1010",
+      "current-hex": "QQ 1010",
+      "moves": [
+        {
+          "line-no": 24,
+          "step-no": 1,
+          "line": "PRAIRIE, L NW,0987 0987c1 0987e1 0987f1 0987g1",
+          "still": true,
+          "result": "Status Line",
+          "report": {
+            "terrain": "PR",
+            "borders": [
+              {
+                "direction": "NW",
+                "terrain": "L"
+              }
+            ],
+            "encounters": [
+              {
+                "unit-id": "0987"
+              },
+              {
+                "unit-id": "0987c1"
+              },
+              {
+                "unit-id": "0987e1"
+              },
+              {
+                "unit-id": "0987f1"
+              },
+              {
+                "unit-id": "0987g1"
+              }
+            ]
+          }
+        }
+      ]
+    }
+  }
+}
