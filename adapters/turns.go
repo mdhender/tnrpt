@@ -101,7 +101,7 @@ func adaptParserScry(ps *azul.Scry_t) *tnrpt.Scry_t {
 		Type:        ps.Type,
 		Origin:      ps.Origin,
 		Coordinates: ps.Coordinates,
-		Text:        ps.Text,
+		Text:        string(ps.Text),
 		Scouts:      adaptParserScout(ps.Scouts),
 	}
 

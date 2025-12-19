@@ -20,13 +20,12 @@ type Turns_t map[string]*Turn_t
 // Turn_t represents the data from a single file, which must contain
 // a single turn. The turn is identified by year and month.
 type Turn_t struct {
-	Id string `json:"id,omitempty"`
-
 	// Source is the name of the input file
 	Source string `json:"source,omitempty"`
 
-	Year  int `json:"year,omitempty"`
-	Month int `json:"month,omitempty"`
+	Id    string `json:"turn-id,omitempty"`
+	Year  int    `json:"year,omitempty"`
+	Month int    `json:"month,omitempty"`
 
 	// UnitMoves holds the units that moved in this turn
 	UnitMoves map[UnitId_t]*Moves_t `json:"unit-moves,omitempty"`
@@ -48,24 +47,13 @@ type Moves_t struct {
 	// PreviousHex is the hex the unit starts the move in.
 	// This could be "N/A" if the unit was created this turn.
 	// In that case, we will populate it when we know where the unit started.
-	PreviousHex string `json:"previous-hex,omitempty"`
+	PreviousHex         string               `json:"previous-hex,omitempty"`
+	PreviousCoordinates coords.WorldMapCoord `json:"previous-coordinates,omitzero"`
 
 	// CurrentHex is the hex is unit ends the movement in.
 	// This should always be set from the turn report.
 	// It might be the same as the PreviousHex if the unit stays in place or fails to move.
-	CurrentHex string `json:"current-hex,omitempty"`
-
-	// warning: we're changing from "location" to "coordinates."
-	// this is a breaking change so we're introducing new fields, FromCoordinates and ToCoordinates, to help.
-
-	// PreviousCoordinates is the hex the unit starts the move in.
-	// This could be "N/A" if the unit was created this turn.
-	// In that case, we will populate it when we know where the unit started.
-	PreviousCoordinates coords.WorldMapCoord `json:"previous-coordinates,omitzero"`
-
-	// CurrentCoordinates is the hex is unit ends the movement in.
-	// This should always be set from the turn report.
-	// It might be the same as the PreviousCoordinates if the unit stays in place or fails to move.
+	CurrentHex         string               `json:"current-hex,omitempty"`
 	CurrentCoordinates coords.WorldMapCoord `json:"current-coordinates,omitzero"`
 
 	// all the moves made this turn
@@ -84,6 +72,11 @@ type Moves_t struct {
 // The move can be follows, goes to, stay in place, or attempt to advance a direction.
 // The move will fail, succeed, or the unit can simply vanish without a trace.
 type Move_t struct {
+	LineNo int    `json:"line-no,omitempty"`
+	StepNo int    `json:"step-no,omitempty"`
+	Line   string `json:"line,omitempty"`
+
+	TurnId string   `json:"turn-id,omitempty"`
 	UnitId UnitId_t `json:"unit-id,omitempty"`
 
 	FromCoordinates coords.WorldMapCoord `json:"from-coordinates,omitzero"`
@@ -100,11 +93,6 @@ type Move_t struct {
 
 	Report *Report_t `json:"report,omitempty"`
 
-	LineNo int    `json:"line-no,omitempty"`
-	StepNo int    `json:"step-no,omitempty"`
-	Line   string `json:"line,omitempty"`
-
-	TurnId     string `json:"turn-id,omitempty"`
 	CurrentHex string `json:"current-hex,omitempty"`
 }
 
@@ -113,18 +101,18 @@ type Scry_t struct {
 	Type        unit_movement.Type_e `json:"type,omitempty"`
 	Origin      string               `json:"origin,omitempty"`
 	Coordinates coords.WorldMapCoord `json:"coordinates,omitzero"`
-	Text        []byte               `json:"text,omitempty"`
+	Text        string               `json:"text,omitempty"`
 	Moves       []*Move_t            `json:"moves,omitempty"`
 	Scouts      *Scout_t             `json:"scouts,omitempty"`
 }
 
 // Scout_t represents a scout sent out by a unit.
 type Scout_t struct {
-	No     int    `json:"no,omitempty"`
-	TurnId string `json:"turn-id,omitempty"`
-
 	LineNo int    `json:"line-no,omitempty"`
 	Line   string `json:"line,omitempty"`
+
+	TurnId string `json:"turn-id,omitempty"`
+	No     int    `json:"no,omitempty"`
 
 	Moves []*Move_t `json:"moves,omitempty"`
 }
@@ -132,10 +120,9 @@ type Scout_t struct {
 // Report_t represents the observations made by a unit.
 // All reports are relative to the hex that the unit is reporting from.
 type Report_t struct {
-	UnitId UnitId_t `json:"unit-id,omitempty"`
-
-	TurnId        string `json:"turn-id,omitempty"`
-	ScoutedTurnId string `json:"scouted-turn-id,omitempty"`
+	TurnId        string   `json:"turn-id,omitempty"`
+	UnitId        UnitId_t `json:"unit-id,omitempty"`
+	ScoutedTurnId string   `json:"scouted-turn-id,omitempty"`
 
 	// permanent items in this hex
 	Terrain terrain.Terrain_e `json:"terrain,omitempty"`
