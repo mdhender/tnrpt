@@ -147,6 +147,25 @@ const (
 
 // WorldMapCoord stores the location of a tile on the TribeNet "world map."
 // It works through the translation between world map coordinates, offset coordinates, and cube coordinates.
+//
+// # Invariants
+//
+// There are three special coordinate states that require careful handling:
+//
+//  1. Zero-value: A WorldMapCoord with id == "" represents an uninitialized coordinate.
+//     ID() returns "N/A" for zero-values to ensure safe JSON marshalling.
+//
+//  2. N/A coordinates: Created via NewWorldMapCoord("N/A"), these represent explicitly
+//     unknown or not-applicable locations. The cube coordinates are (0,0,0), but ID()
+//     preserves "N/A" rather than converting to "AA 0101".
+//
+//  3. Obscured coordinates: Created via NewWorldMapCoord("## XXYY"), these represent
+//     coordinates where the grid is hidden. Internally mapped to "QQ" for cube math,
+//     but ID() preserves the original "## XXYY" format.
+//
+// The String() method always calculates coordinates from cube values (for debugging).
+// The ID() method preserves special values and should be used for display and JSON.
+// MarshalJSON uses ID() to ensure round-trip fidelity for special coordinates.
 type WorldMapCoord struct {
 	id   string
 	cube CubeCoord
@@ -211,6 +230,58 @@ func NewWorldMapCoord(id string) (WorldMapCoord, error) {
 // This is wonky because of "N/A" and obscured grids, but seems like the best compromise.
 func (c WorldMapCoord) Equals(b WorldMapCoord) bool {
 	return c.id == b.id
+}
+
+// ID returns the internal coordinates converted to a world map coordinate.
+// "N/A", obscured coordinates, and zero-value coordinates return the original ID value.
+func (c WorldMapCoord) ID() string {
+	if c.id == "" || c.id == "N/A" || strings.HasPrefix(c.id, "##") {
+		if c.id == "" {
+			return "N/A"
+		}
+		return c.id
+	}
+	// All other coordinates calculate the ID. We should eventually reach
+	// a point where we trust everyone to create us with a good ID, but
+	// not yet.
+	oddq := c.cube.ToOddQ()
+	gridRow, gridColumn := oddq.row/rowsPerGrid, oddq.col/columnsPerGrid
+	subGridColumn, subGridRow := oddq.col-gridColumn*columnsPerGrid+1, oddq.row-gridRow*rowsPerGrid+1
+	var gridRowCode, gridColumnCode byte
+	switch {
+	case gridRow < 0:
+		gridRowCode = '<'
+	case gridRow > 25:
+		gridRowCode = '>'
+	default:
+		gridRowCode = 'A' + byte(gridRow)
+	}
+	switch {
+	case gridColumn < 0:
+		gridColumnCode = '<'
+	case gridColumn > 25:
+		gridColumnCode = '>'
+	default:
+		gridColumnCode = 'A' + byte(gridColumn)
+	}
+	var subGridColumnCode, subGridRowCode string
+	switch {
+	case subGridColumn < 1:
+		subGridColumnCode = "<<"
+	case subGridColumn > columnsPerGrid:
+		subGridColumnCode = ">>"
+	default:
+		subGridColumnCode = fmt.Sprintf("%02d", subGridColumn)
+	}
+	switch {
+	case subGridRow < 1:
+		subGridRowCode = "<<"
+	case subGridRow > rowsPerGrid:
+		subGridRowCode = ">>"
+	default:
+		subGridRowCode = fmt.Sprintf("%02d", subGridRow)
+	}
+	return fmt.Sprintf("%c%c %s%s", gridRowCode, gridColumnCode, subGridColumnCode, subGridRowCode)
 }
 
 // IsNA returns true if the id of the coordinates is "N/A"
@@ -312,7 +383,7 @@ func (c WorldMapCoord) String() string {
 
 // MarshalJSON implements the json.Marshaler interface.
 func (c WorldMapCoord) MarshalJSON() ([]byte, error) {
-	return []byte(fmt.Sprintf("%q", c.String())), nil
+	return []byte(fmt.Sprintf("%q", c.ID())), nil
 }
 
 // UnmarshalJSON implements the json.Unmarshaler interface.
