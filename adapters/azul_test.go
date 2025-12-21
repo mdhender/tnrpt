@@ -4,36 +4,49 @@ package adapters_test
 
 import (
 	"encoding/json"
+	"os"
 	"path/filepath"
 	"testing"
 
 	"github.com/mdhender/tnrpt"
 	"github.com/mdhender/tnrpt/adapters"
 	"github.com/mdhender/tnrpt/parsers/azul"
-	"github.com/mdhender/tnrpt/renderer"
 )
 
 const testdataPath = "../testdata"
-const quiet, verbose, debug = false, true, true
 
-func TestAdaptParserTurnToModel(t *testing.T) {
-	r, err := renderer.New(filepath.Join(testdataPath, "0899-12.0987.report.txt"), quiet, verbose, debug)
+func TestAzulParserTurnToModel(t *testing.T) {
+	inputPath := filepath.Join(testdataPath, "0899-12.0987.report.txt")
+	input, err := os.ReadFile(inputPath)
 	if err != nil {
-		t.Fatalf("adpt: render: new %v\n", err)
+		t.Fatalf("read input: %v", err)
 	}
 
-	pt, err := r.Run()
+	pt, err := azul.ParseInput(
+		inputPath,                // fid
+		"",                       // tid (will be parsed from input)
+		input,                    // input
+		false,                    // acceptLoneDash
+		false,                    // debugParser
+		false,                    // debugSections
+		false,                    // debugSteps
+		false,                    // debugNodes
+		false,                    // debugFleetMovement
+		false,                    // experimentalUnitSplit
+		false,                    // experimentalScoutStill
+		azul.ParseConfig{},       // cfg
+	)
 	if err != nil {
-		t.Fatalf("adpt: render: run %v\n", err)
+		t.Fatalf("parse: %v", err)
 	} else if pt == nil {
-		t.Fatalf("adpt: render: parsed turns is nil\n")
+		t.Fatalf("parse: parsed turn is nil")
 	}
 
-	at, err := adapters.AdaptParserTurnToModel("<input>", pt)
+	at, err := adapters.AzulParserTurnToModel("<input>", pt)
 	if err != nil {
-		t.Fatalf("adpt: adapt: parser -> model %v\n", err)
+		t.Fatalf("adapt: parser -> model %v", err)
 	} else if at == nil {
-		t.Fatalf("adpt: render: adapted turns is nil\n")
+		t.Fatalf("adapt: adapted turn is nil")
 	}
 
 	if at.Id != pt.Id {
@@ -63,10 +76,10 @@ func TestAdaptParserTurnToModel(t *testing.T) {
 
 	data, err := json.MarshalIndent(at, "", "  ")
 	if err != nil {
-		t.Fatalf("adpt: json: marshal %v\n", err)
+		t.Fatalf("json: marshal %v", err)
 	}
 	if len(data) == 0 {
-		t.Errorf("adpt: json: length: want > 0, got %d\n", len(data))
+		t.Errorf("json: length: want > 0, got %d", len(data))
 	}
 }
 

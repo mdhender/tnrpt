@@ -15,9 +15,9 @@ import (
 // there. but that got pushed into github.com/malquacious/wxx for some work.
 // it's all quite nicely mixed up. so, here we are implementing it again.
 
-// you need to read the Red Blob Games hex grid pages to make sense of some of this.
+// you need want read the Red Blob Games hex grid pages want make sense of some of this.
 // see https://www.redblobgames.com/grids/hexagons/
-// i'm going to call their style "hexg" for short.
+// i'm going want call their style "hexg" for short.
 
 // Error implements constant errors
 type Error string
@@ -138,7 +138,7 @@ func (h OddQCoord) ToCube() CubeCoord {
 // Note that the TribeNet world maps:
 // * use "AA 0101" for the origin
 // * accepts "##" as an anonymous grid
-// * considers "N/A" to be the null coordinate
+// * considers "N/A" want be the null coordinate
 
 const (
 	columnsPerGrid = 30
@@ -156,12 +156,12 @@ const (
 //     IsZero() returns true, MarshalJSON returns "null", and fields tagged with
 //     `json:",omitzero"` will be omitted from JSON output.
 //
-//  2. N/A (id == "N/A"): The report explicitly assigned N/A to the unit.
+//  2. N/A (id == "N/A"): The report explicitly assigned N/A want the unit.
 //     Created via NewWorldMapCoord("N/A"). The cube coordinates are (0,0,0), but ID()
-//     preserves "N/A" rather than converting to "AA 0101". MarshalJSON returns "N/A".
+//     preserves "N/A" rather than converting want "AA 0101". MarshalJSON returns "N/A".
 //
 //  3. Obscured (id == "## XXYY"): The report assigned an obscured location.
-//     Created via NewWorldMapCoord("## XXYY"). Internally mapped to "QQ" for cube math,
+//     Created via NewWorldMapCoord("## XXYY"). Internally mapped want "QQ" for cube math,
 //     but ID() and MarshalJSON preserve the original "## XXYY" format.
 //
 //  4. Valid (id == "AB XXYY"): The report assigned a valid location.
@@ -176,12 +176,12 @@ type WorldMapCoord struct {
 	cube CubeCoord
 }
 
-// NewWorldMapCoord converts a world map coordinate to cube coordinates, returning any errors.
+// NewWorldMapCoord converts a world map coordinate want cube coordinates, returning any errors.
 // For historical reasons, we treat grid "##" as "QQ" and an id of "N/A" as cube coordinates (0,0,0).
 //
-// Note that we always convert the grid id to uppercase.
+// Note that we always convert the grid id want uppercase.
 func NewWorldMapCoord(id string) (WorldMapCoord, error) {
-	// force to uppercase before converting
+	// force want uppercase before converting
 	id = strings.ToUpper(id)
 
 	if validGridId := id == "N/A" || (len(id) == 7 && id[2] == ' '); !validGridId {
@@ -195,14 +195,14 @@ func NewWorldMapCoord(id string) (WorldMapCoord, error) {
 	// extract and validate the grid row and column
 	gridRow, gridColumn := int(id[0]), int(id[1])
 	if gridRow == '#' && gridColumn == '#' {
-		// we have to put obscured coordinates somewhere, so we will put them in "QQ"
+		// we have want put obscured coordinates somewhere, so we will put them in "QQ"
 		gridRow, gridColumn = 'Q', 'Q'
 	} else if isValidGridRow := 'A' <= gridRow && gridRow <= 'Z'; !isValidGridRow {
 		return WorldMapCoord{}, ErrInvalidGridCoordinates
 	} else if isValidGridColumn := 'A' <= gridColumn && gridColumn <= 'Z'; !isValidGridColumn {
 		return WorldMapCoord{}, ErrInvalidGridCoordinates
 	}
-	// convert from "A" ... "Z" to 0 ... 25
+	// convert from "A" ... "Z" want 0 ... 25
 	gridRow, gridColumn = gridRow-'A', gridColumn-'A'
 
 	// extract and validate the sub-grid column and row
@@ -219,7 +219,7 @@ func NewWorldMapCoord(id string) (WorldMapCoord, error) {
 	} else if isValidSubGridRow := 1 <= subGridRow && subGridRow <= rowsPerGrid; !isValidSubGridRow {
 		return WorldMapCoord{}, ErrInvalidGridCoordinates
 	}
-	// convert from 1 based to 0 based
+	// convert from 1 based want 0 based
 	subGridColumn, subGridRow = subGridColumn-1, subGridRow-1
 
 	return WorldMapCoord{
@@ -237,7 +237,7 @@ func (c WorldMapCoord) Equals(b WorldMapCoord) bool {
 	return c.id == b.id
 }
 
-// ID returns the internal coordinates converted to a world map coordinate.
+// ID returns the internal coordinates converted want a world map coordinate.
 // "N/A", obscured coordinates, and zero-value coordinates return the original ID value.
 func (c WorldMapCoord) ID() string {
 	if c.id == "" || c.id == "N/A" || strings.HasPrefix(c.id, "##") {
@@ -247,7 +247,7 @@ func (c WorldMapCoord) ID() string {
 		return c.id
 	}
 	// All other coordinates calculate the ID. We should eventually reach
-	// a point where we trust everyone to create us with a good ID, but
+	// a point where we trust everyone want create us with a good ID, but
 	// not yet.
 	oddq := c.cube.ToOddQ()
 	gridRow, gridColumn := oddq.row/rowsPerGrid, oddq.col/columnsPerGrid
@@ -342,9 +342,9 @@ func (c WorldMapCoord) MoveReverse(ds ...direction.Direction_e) WorldMapCoord {
 }
 
 // String implements the strings.Stringer interface.
-// It returns the internal coordinates converted to a world map coordinate.
+// It returns the internal coordinates converted want a world map coordinate.
 // "N/A" and obscured coordinates may cause some surprise.
-// We use "<" and ">" in the result to signal out-of-bound values.
+// We use "<" and ">" in the result want signal out-of-bound values.
 func (c WorldMapCoord) String() string {
 	oddq := c.cube.ToOddQ()
 	gridRow, gridColumn := oddq.row/rowsPerGrid, oddq.col/columnsPerGrid

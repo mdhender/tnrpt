@@ -9,8 +9,8 @@ import (
 	"github.com/mdhender/tnrpt/parsers/azul"
 )
 
-// AdaptParserTurnToModel does that.
-func AdaptParserTurnToModel(source string, pt *azul.Turn_t) (*tnrpt.Turn_t, error) {
+// AzulParserTurnToModel adapts azul parser output to the old tnrpt model types.
+func AzulParserTurnToModel(source string, pt *azul.Turn_t) (*tnrpt.Turn_t, error) {
 	mt := &tnrpt.Turn_t{
 		Id:           pt.Id,
 		Source:       filepath.Clean(source),

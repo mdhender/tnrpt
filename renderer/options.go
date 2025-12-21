@@ -2,21 +2,14 @@
 
 package renderer
 
-type Option func(p *Renderer) error
-
-func WithAutoEOL(flag bool) Option {
-	return func(p *Renderer) error {
-		p.autoEOL = flag
-		return nil
-	}
-}
+type Option func(r *Renderer) error
 
 // WithExcludeUnits adds the units to the exclude units set
 func WithExcludeUnits(units ...string) Option {
-	return func(p *Renderer) error {
+	return func(r *Renderer) error {
 		for _, unit := range units {
-			p.excludeUnits[unit] = true
-			delete(p.includeUnits, unit)
+			r.excludeUnits[unit] = true
+			delete(r.includeUnits, unit)
 		}
 		return nil
 	}
@@ -25,18 +18,11 @@ func WithExcludeUnits(units ...string) Option {
 // WithIncludeUnits adds the units to the include units set.
 // If this set is not empty, only units in the set will be parsed.
 func WithIncludeUnits(units ...string) Option {
-	return func(p *Renderer) error {
+	return func(r *Renderer) error {
 		for _, unit := range units {
-			p.includeUnits[unit] = true
-			delete(p.excludeUnits, unit)
+			r.includeUnits[unit] = true
+			delete(r.excludeUnits, unit)
 		}
-		return nil
-	}
-}
-
-func WithStripCR(flag bool) Option {
-	return func(p *Renderer) error {
-		p.stripCR = flag
 		return nil
 	}
 }

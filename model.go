@@ -3,6 +3,7 @@
 package tnrpt
 
 import (
+	"github.com/maloquacious/hexg"
 	"github.com/mdhender/tnrpt/compass"
 	"github.com/mdhender/tnrpt/direction"
 	"github.com/mdhender/tnrpt/edges"
@@ -22,9 +23,10 @@ type Turn_t struct {
 	// Source is the name of the input file
 	Source string `json:"source,omitempty"`
 
-	Id    string `json:"turn-id,omitempty"`
-	Year  int    `json:"year,omitempty"`
-	Month int    `json:"month,omitempty"`
+	Id     string `json:"turn-id,omitempty"`
+	Year   int    `json:"year,omitempty"`
+	Month  int    `json:"month,omitempty"`
+	ClanNo int    `json:"clanNo,omitempty"`
 
 	// UnitMoves holds the units that moved in this turn
 	UnitMoves map[UnitId_t]*Moves_t `json:"unit-moves,omitempty"`
@@ -154,4 +156,18 @@ type FarHorizon_t struct {
 type Special_t struct {
 	Id   string `json:"id,omitempty"`
 	Name string `json:"name,omitempty"`
+}
+
+// Hex_t uses cube coordinates.
+// 0,0,0 is not a valid TribeNet hex.
+type Hex_t struct {
+	coords hexg.Hex
+	id     string
+}
+
+func (h Hex_t) Hash() string {
+	if h.id == "" {
+		return "N/A"
+	}
+	return "## 0101"
 }
