@@ -8,7 +8,7 @@ import (
 
 	"github.com/mdhender/tnrpt"
 	"github.com/mdhender/tnrpt/adapters"
-	"github.com/mdhender/tnrpt/renderer"
+	"github.com/mdhender/tnrpt/parsers"
 	"github.com/spf13/cobra"
 
 	"log"
@@ -27,9 +27,8 @@ func main() {
 		return nil
 	}
 	var cmdRoot = &cobra.Command{
-		Use:   "ottoapp",
-		Short: "OttoMap command runner",
-		Long:  `OttoApp runs commands for OttoMap.`,
+		Use:   "azul",
+		Short: "Parse turn reports using the azul parser",
 		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
 			logWithDefaultFlags, _ := cmd.Flags().GetBool("log-with-default-flags")
 			logWithShortFileName, _ := cmd.Flags().GetBool("log-with-shortfile")
@@ -66,17 +65,18 @@ func main() {
 
 func cmdParse() *cobra.Command {
 	autoEOL := true
+	stripCR := false
 	var configFile string
 	var excludeUnits []string
 	var includeUnits []string
 	var outputFile string
 	addFlags := func(cmd *cobra.Command) error {
-		cmd.Flags().BoolVar(&autoEOL, "auto-eol", true, "automatically convert line endings")
+		cmd.Flags().BoolVar(&autoEOL, "auto-eol", autoEOL, "automatically convert line endings")
 		cmd.Flags().StringVarP(&configFile, "config-file", "c", configFile, "load configuration from file")
 		cmd.Flags().StringSliceVarP(&excludeUnits, "exclude", "e", excludeUnits, "exclude the unit")
 		cmd.Flags().StringSliceVarP(&includeUnits, "include", "i", includeUnits, "include the unit")
 		cmd.Flags().StringVarP(&outputFile, "output", "o", outputFile, "save parse to file")
-		cmd.Flags().BoolVar(&autoEOL, "strip-cr", false, "strip CR from end-of-lines")
+		cmd.Flags().BoolVar(&stripCR, "strip-cr", stripCR, "strip CR from end-of-lines")
 		return nil
 	}
 	var cmd = &cobra.Command{
@@ -96,15 +96,11 @@ func cmdParse() *cobra.Command {
 				return fmt.Errorf("error: --config-file is not implemented")
 			}
 
-			r, err := renderer.New(args[0], quiet, verbose, debug)
+			turn, err := parsers.ParseTurnReport(args[0], autoEOL, stripCR, quiet, verbose, debug)
 			if err != nil {
 				return err
 			}
-			pt, err := r.Run()
-			if err != nil {
-				return err
-			}
-			at, err := adapters.AdaptParserTurnToModel(args[0], pt)
+			at, err := adapters.AzulParserTurnToModel(args[0], turn)
 			if err != nil {
 				return err
 			}

@@ -1,8 +1,9 @@
 module github.com/mdhender/tnrpt
 
-go 1.25.4
+go 1.25.5
 
 require (
+	github.com/maloquacious/hexg v1.0.1
 	github.com/maloquacious/semver v0.4.0
 	github.com/spf13/cobra v1.10.2
 )

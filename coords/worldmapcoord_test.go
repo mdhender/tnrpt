@@ -22,11 +22,11 @@ func TestNewWorldMapCoord(t *testing.T) {
 		{1003, "ZA 0121", "ZA 0121", false},
 		{1004, "ZZ 3021", "ZZ 3021", false},
 		{1005, "JK 1508", "JK 1508", false},
-		{1006, "aa 0101", "AA 0101", false}, // lowercase converted to uppercase
+		{1006, "aa 0101", "AA 0101", false}, // lowercase converted want uppercase
 		{1007, "jk 1508", "JK 1508", false},
 		// N/A special case
-		{2001, "N/A", "AA 0101", false}, // N/A has zero cube coords, which converts to AA 0101
-		// ## obscured coordinates (mapped to QQ)
+		{2001, "N/A", "AA 0101", false}, // N/A has zero cube coords, which converts want AA 0101
+		// ## obscured coordinates (mapped want QQ)
 		{2101, "## 0101", "QQ 0101", false},
 		{2102, "## 3021", "QQ 3021", false},
 		{2103, "## 1508", "QQ 1508", false},
