@@ -14,11 +14,12 @@ import (
 	"github.com/mdhender/tnrpt/unit_movement"
 )
 
-// Turns_t uses the turn's id as the key.
+// Deprecated: Turns_t uses the turn's id as the key.
+// Use model.ReportX and related types in the model package instead.
 type Turns_t map[string]*Turn_t
 
-// Turn_t represents the data from a single file, which must contain
-// a single turn. The turn is identified by year and month.
+// Deprecated: Turn_t represents the data from a single file.
+// Use model.ReportFile and model.ReportX in the model package instead.
 type Turn_t struct {
 	// Source is the name of the input file
 	Source string `json:"source,omitempty"`
@@ -37,10 +38,11 @@ type Turn_t struct {
 	SpecialNames map[string]*Special_t `json:"special-names,omitempty"`
 }
 
+// Deprecated: UnitId_t is a unit identifier. Use model.UnitX.UnitID instead.
 type UnitId_t string
 
-// Moves_t represents the results for a unit that moves and reports in a turn.
-// There will be one instance of this struct for each turn the unit moves in.
+// Deprecated: Moves_t represents the results for a unit that moves and reports in a turn.
+// Use model.UnitX and model.Act in the model package instead.
 type Moves_t struct {
 	UnitId UnitId_t `json:"unit-id,omitempty"`
 
@@ -66,9 +68,8 @@ type Moves_t struct {
 	Scouts []*Scout_t `json:"scouts,omitempty"`
 }
 
-// Move_t represents a single move by a unit.
-// The move can be follows, goes to, stay in place, or attempt to advance a direction.
-// The move will fail, succeed, or the unit can simply vanish without a trace.
+// Deprecated: Move_t represents a single move by a unit.
+// Use model.Step in the model package instead.
 type Move_t struct {
 	LineNo int    `json:"line-no,omitempty"`
 	StepNo int    `json:"step-no,omitempty"`
@@ -86,6 +87,7 @@ type Move_t struct {
 	Report *Report_t `json:"report,omitempty"`
 }
 
+// Deprecated: Scry_t represents a scrying result. Use model.Act with Kind=ActKindScout.
 type Scry_t struct {
 	Text string `json:"text,omitempty"`
 
@@ -98,7 +100,8 @@ type Scry_t struct {
 	Scouts *Scout_t  `json:"scouts,omitempty"`
 }
 
-// Scout_t represents a scout sent out by a unit.
+// Deprecated: Scout_t represents a scout sent out by a unit.
+// Use model.Act with Kind=ActKindScout in the model package instead.
 type Scout_t struct {
 	LineNo int    `json:"line-no,omitempty"`
 	Line   string `json:"line,omitempty"`
@@ -108,8 +111,8 @@ type Scout_t struct {
 	Moves []*Move_t `json:"moves,omitempty"`
 }
 
-// Report_t represents the observations made by a unit.
-// All reports are relative to the hex that the unit is reporting from.
+// Deprecated: Report_t represents the observations made by a unit.
+// Use model.Step with Enc and Borders in the model package instead.
 type Report_t struct {
 	// permanent items in this hex
 	Terrain terrain.Terrain_e `json:"terrain,omitempty"`
@@ -123,7 +126,8 @@ type Report_t struct {
 	FarHorizons []*FarHorizon_t        `json:"far-horizons,omitempty"`
 }
 
-// Border_t represents details about the hex border.
+// Deprecated: Border_t represents details about the hex border.
+// Use model.BorderObs in the model package instead.
 type Border_t struct {
 	Direction direction.Direction_e `json:"direction,omitempty"`
 	// Edge is set if there is an edge feature like a river or pass
@@ -132,34 +136,36 @@ type Border_t struct {
 	Terrain terrain.Terrain_e `json:"terrain,omitempty"`
 }
 
+// Deprecated: Encounter_t represents a unit encounter. Use model.UnitSeen instead.
 type Encounter_t struct {
 	UnitId   UnitId_t `json:"unit-id,omitempty"`
 	Friendly bool     `json:"friendly,omitempty"`
 }
 
-// FoundItem_t represents items discovered by Scouts as they pass through a hex.
+// Deprecated: FoundItem_t represents items discovered by Scouts. Use model.RsrcSeen instead.
 type FoundItem_t struct {
 	Quantity int          `json:"quantity,omitempty"`
 	Item     items.Item_e `json:"item,omitempty"`
 }
 
-// Settlement_t is a settlement that the unit sees in the current hex.
+// Deprecated: Settlement_t is a settlement that the unit sees. Use model.SettleSeen instead.
 type Settlement_t struct {
 	Name string `json:"name,omitempty"`
 }
 
+// Deprecated: FarHorizon_t represents far horizon observations.
 type FarHorizon_t struct {
 	Point   compass.Point_e   `json:"point,omitempty"`
 	Terrain terrain.Terrain_e `json:"terrain,omitempty"`
 }
 
+// Deprecated: Special_t represents a special hex. Use model.Tile with SpecialLabel instead.
 type Special_t struct {
 	Id   string `json:"id,omitempty"`
 	Name string `json:"name,omitempty"`
 }
 
-// Hex_t uses cube coordinates.
-// 0,0,0 is not a valid TribeNet hex.
+// Deprecated: Hex_t uses cube coordinates. Use model.Tile in the model package instead.
 type Hex_t struct {
 	coords hexg.Hex
 	id     string
