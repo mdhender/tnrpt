@@ -4,15 +4,18 @@ package main
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"log"
 	"os"
 	"path/filepath"
+	"sort"
 	"time"
 
 	"github.com/mdhender/tnrpt"
 	"github.com/mdhender/tnrpt/adapters"
+	"github.com/mdhender/tnrpt/model"
 	"github.com/mdhender/tnrpt/parsers"
 	"github.com/mdhender/tnrpt/pipelines/parsers/bistre"
 	"github.com/mdhender/tnrpt/pipelines/parsers/docx"
@@ -135,7 +138,9 @@ func cmdParse() *cobra.Command {
 func cmdPipeline() *cobra.Command {
 	var docxFile string // := filepath.Join("testdata", "0301.0899-12.0987.docx")
 	var textFile string // := filepath.Join("testdata", "0301.0899-12.0987.txt")
+	var game, clanNo string
 	normalizeCRLF, normalizeCR := true, true
+	showDBStats := false
 	showReportSections := false
 	showReportSectionLines := false
 	showText := false
@@ -144,8 +149,11 @@ func cmdPipeline() *cobra.Command {
 	addFlags := func(cmd *cobra.Command) error {
 		cmd.Flags().StringVar(&docxFile, "docx", docxFile, "import docx file")
 		cmd.Flags().StringVar(&textFile, "text", textFile, "import text file")
+		cmd.Flags().StringVar(&game, "game", game, "game identifier")
+		cmd.Flags().StringVar(&clanNo, "clan", clanNo, "clan number")
 		cmd.Flags().BoolVar(&normalizeCR, "normalize-cr", normalizeCR, "change CR to LF at end-of-line")
 		cmd.Flags().BoolVar(&normalizeCRLF, "normalize-cr-lf", normalizeCRLF, "change CR+LF to LF at end-of-line")
+		cmd.Flags().BoolVar(&showDBStats, "show-db-stats", showDBStats, "dump row counts from each table")
 		cmd.Flags().BoolVar(&showReportSections, "show-report-sections", showReportSections, "show report sections")
 		cmd.Flags().BoolVar(&showReportSectionLines, "show-section-lines", showReportSectionLines, "show report section lines")
 		cmd.Flags().BoolVar(&showText, "show-text", showText, "show report text")
@@ -166,6 +174,7 @@ func cmdPipeline() *cobra.Command {
 			return nil
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
+			ctx := context.Background()
 			quiet, _ := cmd.Flags().GetBool("quiet")
 			verbose, _ := cmd.Flags().GetBool("verbose")
 			debug, _ := cmd.Flags().GetBool("debug")
@@ -174,6 +183,13 @@ func cmdPipeline() *cobra.Command {
 			}
 
 			var err error
+
+			// Open in-memory database
+			store, err := model.NewStore(ctx, ":memory:")
+			if err != nil {
+				return fmt.Errorf("create store: %w", err)
+			}
+			defer store.Close()
 
 			startedPipeline, startedStage := time.Now(), time.Now()
 			var doc *docx.Docx
@@ -271,8 +287,38 @@ func cmdPipeline() *cobra.Command {
 			} else if at == nil {
 				return fmt.Errorf("adapter returned nil, nil")
 			}
+			_ = at // retained for compatibility; new code uses Store
 			if showTiming {
 				log.Printf("%s: adapt turn  completed in %v\n", rpt.Name, time.Since(startedStage))
+			}
+
+			// Persist to in-memory database
+			startedStage = time.Now()
+			_, _, err = adapters.BistreTurnToStore(ctx, store, rpt.Name, turn, game, clanNo)
+			if err != nil {
+				return fmt.Errorf("persist to store: %w", err)
+			}
+			if showTiming {
+				log.Printf("%s: store write completed in %v\n", rpt.Name, time.Since(startedStage))
+			}
+
+			// Show database stats if requested
+			if showDBStats {
+				stats, err := store.TableStats(ctx)
+				if err != nil {
+					return fmt.Errorf("get table stats: %w", err)
+				}
+				log.Println("database stats:")
+				tables := make([]string, 0, len(stats))
+				for table := range stats {
+					tables = append(tables, table)
+				}
+				sort.Strings(tables)
+				for _, table := range tables {
+					if stats[table] > 0 {
+						log.Printf("  %-20s %d rows\n", table, stats[table])
+					}
+				}
 			}
 
 			if showTiming {
