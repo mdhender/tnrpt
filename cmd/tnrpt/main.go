@@ -14,7 +14,7 @@ import (
 	"github.com/mdhender/tnrpt"
 	"github.com/mdhender/tnrpt/adapters"
 	"github.com/mdhender/tnrpt/parsers"
-	"github.com/mdhender/tnrpt/parsers/azul"
+	"github.com/mdhender/tnrpt/pipelines/parsers/bistre"
 	"github.com/mdhender/tnrpt/pipelines/parsers/docx"
 	"github.com/mdhender/tnrpt/pipelines/parsers/report"
 	"github.com/mdhender/tnrpt/walkers/anhinga"
@@ -242,7 +242,7 @@ func cmdPipeline() *cobra.Command {
 			var acceptLoneDash, parserDebugFlag, sectionsDebugFlag, stepsDebugFlag, nodesDebugFlag, fleetMovementDebugFlag, splitTrailingUnits, cleanupScoutStill bool
 
 			startedStage = time.Now()
-			turn, err := azul.ParseInput(rpt.Name, rpt.TurnNo, text, acceptLoneDash, parserDebugFlag, sectionsDebugFlag, stepsDebugFlag, nodesDebugFlag, fleetMovementDebugFlag, splitTrailingUnits, cleanupScoutStill, azul.ParseConfig{})
+			turn, err := bistre.ParseInput(rpt.Name, rpt.TurnNo, text, acceptLoneDash, parserDebugFlag, sectionsDebugFlag, stepsDebugFlag, nodesDebugFlag, fleetMovementDebugFlag, splitTrailingUnits, cleanupScoutStill, bistre.ParseConfig{})
 			if err != nil {
 				return err
 			} else if turn == nil {
@@ -260,12 +260,12 @@ func cmdPipeline() *cobra.Command {
 					log.Printf("error: try running with --auto-eol\n")
 					return fmt.Errorf("unable to find current turn in source")
 				}
-				log.Printf("error: expected turn %q: got turn %q\n", rpt.Sections, foundTurnNo)
+				log.Printf("error: expected turn %q: got turn %q\n", rpt.TurnNo, foundTurnNo)
 				return fmt.Errorf("unexpected current turn in source")
 			}
 
 			startedStage = time.Now()
-			at, err := adapters.AzulParserTurnToModel(rpt.Name, turn)
+			at, err := adapters.BistreParserTurnToModel(rpt.Name, turn)
 			if err != nil {
 				return err
 			} else if at == nil {

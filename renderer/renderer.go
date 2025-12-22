@@ -31,7 +31,7 @@ func New(options ...Option) (*Renderer, error) {
 func (r *Renderer) Render(turn *azul.Turn_t, quiet, verbose, debug bool) error {
 	started := time.Now()
 
-	log.Printf("render: %04d-%02d: units %4d: in %v\n", turn.Year, turn.Month, time.Since(started))
+	log.Printf("render: %04d-%02d: units %4d: in %v\n", turn.Year, turn.Month, len(turn.UnitMoves), time.Since(started))
 
 	return nil
 }
