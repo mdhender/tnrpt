@@ -1,0 +1,62 @@
+// Copyright (c) 2025 Michael D Henderson. All rights reserved.
+
+package templates
+
+import (
+	"strconv"
+
+	"github.com/mdhender/tnrpt/web/store"
+)
+
+templ Layout(title string) {
+	<!DOCTYPE html>
+	<html lang="en">
+		<head>
+			<meta charset="UTF-8"/>
+			<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+			<title>{ title } - TribeNet Reports</title>
+			<script src="https://unpkg.com/htmx.org@2.0.4"></script>
+			<link rel="stylesheet" href="/static/style.css"/>
+		</head>
+		<body>
+			<header>
+				<nav>
+					<a href="/">TribeNet Reports</a>
+					if ctx.Value("username") != nil {
+						<span class="user-info">
+							{ ctx.Value("username").(string) }
+							<a href="/logout">Logout</a>
+						</span>
+					}
+				</nav>
+			</header>
+			<main>
+				{ children... }
+			</main>
+			<footer>
+				<p>&copy; 2025 TribeNet Reports</p>
+			</footer>
+		</body>
+	</html>
+}
+
+templ Index(stats store.Stats) {
+	@Layout("Home") {
+		<h1>Welcome to TribeNet Reports</h1>
+		<p>Select a turn report to view.</p>
+		<section class="stats">
+			<h2>Data Loaded</h2>
+			<ul>
+				<li><strong>Reports:</strong> { strconv.Itoa(stats.Reports) }</li>
+				<li><strong>Units:</strong> { strconv.Itoa(stats.Units) }</li>
+				<li><strong>Acts:</strong> { strconv.Itoa(stats.Acts) }</li>
+				<li><strong>Steps:</strong> { strconv.Itoa(stats.Steps) }</li>
+			</ul>
+		</section>
+		<section class="actions">
+			<h2>Browse Data</h2>
+			<button hx-get="/units" hx-target="#data-view" hx-swap="innerHTML">Load Units</button>
+		</section>
+		<section id="data-view"></section>
+	}
+}

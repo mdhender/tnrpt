@@ -1,0 +1,55 @@
+// Copyright (c) 2025 Michael D Henderson. All rights reserved.
+
+package templates
+
+import (
+	"strconv"
+
+	"github.com/mdhender/tnrpt/model"
+)
+
+templ UnitsPage(units []*model.UnitX) {
+	@Layout("Units") {
+		<h1>Units</h1>
+		<div id="units-table-container">
+			@UnitsTable(units)
+		</div>
+	}
+}
+
+templ UnitsTable(units []*model.UnitX) {
+	if len(units) == 0 {
+		<p>No units found.</p>
+	} else {
+		<table>
+			<thead>
+				<tr>
+					<th>Unit ID</th>
+					<th>Turn</th>
+					<th>Start</th>
+					<th>End</th>
+					<th>Acts</th>
+				</tr>
+			</thead>
+			<tbody>
+				for _, u := range units {
+					@UnitRow(u)
+				}
+			</tbody>
+		</table>
+	}
+}
+
+templ UnitRow(u *model.UnitX) {
+	<tr>
+		<td>{ u.UnitID }</td>
+		<td>{ intToStr(u.TurnNo) }</td>
+		<td>{ string(u.StartTN) }</td>
+		<td>{ string(u.EndTN) }</td>
+		<td>{ intToStr(len(u.Acts)) }</td>
+	</tr>
+}
+
+func intToStr(n int) string {
+	return strconv.Itoa(n)
+}
