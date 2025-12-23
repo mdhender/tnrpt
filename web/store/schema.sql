@@ -232,3 +232,38 @@ CREATE TABLE IF NOT EXISTS render_job_turns (
   turn_no   INTEGER NOT NULL,
   UNIQUE(job_id, turn_no)
 );
+
+-- Users and authentication
+CREATE TABLE IF NOT EXISTS users (
+  handle        TEXT PRIMARY KEY,
+  user_name     TEXT NOT NULL,
+  email         TEXT,
+  timezone      TEXT,
+  password_hash TEXT NOT NULL,
+  created_at    TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS user_roles (
+  id          INTEGER PRIMARY KEY,
+  user_handle TEXT NOT NULL REFERENCES users(handle) ON DELETE CASCADE,
+  role        TEXT NOT NULL,
+  UNIQUE(user_handle, role)
+);
+CREATE INDEX IF NOT EXISTS idx_user_roles_handle ON user_roles(user_handle);
+
+-- Games and clan membership (clan_no is per-game, not per-user)
+CREATE TABLE IF NOT EXISTS games (
+  id          TEXT PRIMARY KEY,
+  description TEXT
+);
+
+CREATE TABLE IF NOT EXISTS game_clans (
+  id          INTEGER PRIMARY KEY,
+  game_id     TEXT NOT NULL REFERENCES games(id) ON DELETE CASCADE,
+  user_handle TEXT NOT NULL REFERENCES users(handle) ON DELETE CASCADE,
+  clan_no     INTEGER NOT NULL,
+  UNIQUE(game_id, user_handle),
+  UNIQUE(game_id, clan_no)
+);
+CREATE INDEX IF NOT EXISTS idx_game_clans_game ON game_clans(game_id);
+CREATE INDEX IF NOT EXISTS idx_game_clans_user ON game_clans(user_handle);

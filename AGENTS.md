@@ -5,7 +5,10 @@
 ## Build & Test Commands
 - Run server: `go run ./cmd/server`
 - Run server with auto-shutdown for testing: `go run ./cmd/server --timeout 5s`
+- Run server with file-based SQLite: `go run ./cmd/server --db data/amp/tnrpt.db`
 - Run tnrpt: `go run ./cmd/tnrpt options...`
+- Init database: `go run ./cmd/tnrpt init-db data/amp/tnrpt.db`
+- Compact database: `go run ./cmd/tnrpt compact-db data/amp/tnrpt.db`
 - Build: `go build ./...`
 - Test all: `go test ./...`
 - Single test: `go test -run TestName ./path/to/package`

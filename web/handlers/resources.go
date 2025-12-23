@@ -23,7 +23,7 @@ func (h *Handlers) Resources(w http.ResponseWriter, r *http.Request) {
 
 	layoutData := h.getLayoutData(r, session)
 
-	resources, err := h.store.ResourcesByClan(session.User.ClanID, layoutData.SelectedTurn)
+	resources, err := h.store.ResourcesByGameClan(layoutData.CurrentGameID, layoutData.CurrentClanNo, layoutData.SelectedTurn)
 	if err != nil {
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
 		return

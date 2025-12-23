@@ -23,7 +23,7 @@ func (h *Handlers) Movements(w http.ResponseWriter, r *http.Request) {
 
 	layoutData := h.getLayoutData(r, session)
 
-	movements, err := h.store.MovementsByClan(session.User.ClanID, layoutData.SelectedTurn)
+	movements, err := h.store.MovementsByGameClan(layoutData.CurrentGameID, layoutData.CurrentClanNo, layoutData.SelectedTurn)
 	if err != nil {
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
 		return

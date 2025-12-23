@@ -4,8 +4,11 @@ package store
 
 import (
 	"bytes"
+	"context"
 	"crypto/sha256"
+	"database/sql"
 	"encoding/hex"
+	"encoding/json"
 	"fmt"
 	"log"
 	"os"
@@ -19,6 +22,7 @@ import (
 	"github.com/mdhender/tnrpt/pipelines/parsers/bistre"
 	"github.com/mdhender/tnrpt/pipelines/parsers/docx"
 	"github.com/mdhender/tnrpt/pipelines/parsers/report"
+	"github.com/mdhender/tnrpt/web/auth"
 )
 
 // Store is an interface for loading data.
@@ -129,4 +133,131 @@ func parseFilename(name string) (game, clan string) {
 		return matches[1], matches[3]
 	}
 	return "", ""
+}
+
+// JSON types for user/game loading
+
+type jsonUser struct {
+	Handle   string   `json:"handle"`
+	UserName string   `json:"user-name"`
+	Email    string   `json:"email"`
+	Timezone string   `json:"tz"`
+	Password string   `json:"password"`
+	Roles    []string `json:"roles"`
+}
+
+type jsonGame struct {
+	ID          string `json:"id"`
+	Description string `json:"description"`
+	Clans       []struct {
+		Handle string `json:"handle"`
+		Clan   int    `json:"clan"`
+	} `json:"clans"`
+}
+
+func loadUsersFromJSON(ctx context.Context, db *sql.DB, path string) error {
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return fmt.Errorf("read users file: %w", err)
+	}
+
+	var users []jsonUser
+	if err := json.Unmarshal(data, &users); err != nil {
+		return fmt.Errorf("parse users json: %w", err)
+	}
+
+	now := time.Now().Format(time.RFC3339)
+	// Invalid bcrypt hash that will never match any password
+	const invalidHash = "$2a$10$INVALID.HASH.THAT.WILL.NEVER.MATCH.ANY.PASSWORD.EVER"
+
+	for _, ju := range users {
+		isActive := hasRole(ju.Roles, "active")
+
+		var hash string
+		if isActive && ju.Password != "" {
+			var err error
+			hash, err = auth.HashPassword(ju.Password)
+			if err != nil {
+				return fmt.Errorf("hash password for %s: %w", ju.Handle, err)
+			}
+		} else {
+			// Inactive users get an invalid hash so they can never log in
+			hash = invalidHash
+		}
+
+		userName := ju.UserName
+		if userName == "" {
+			userName = ju.Handle // Use handle as fallback for inactive users
+		}
+
+		_, err = db.ExecContext(ctx, `
+			INSERT INTO users (handle, user_name, email, timezone, password_hash, created_at)
+			VALUES (?, ?, ?, ?, ?, ?)
+			ON CONFLICT(handle) DO UPDATE SET
+				user_name = excluded.user_name,
+				email = excluded.email,
+				timezone = excluded.timezone,
+				password_hash = excluded.password_hash
+		`, ju.Handle, userName, ju.Email, ju.Timezone, hash, now)
+		if err != nil {
+			return fmt.Errorf("insert user %s: %w", ju.Handle, err)
+		}
+
+		// Delete existing roles and insert new ones
+		_, _ = db.ExecContext(ctx, `DELETE FROM user_roles WHERE user_handle = ?`, ju.Handle)
+		for _, role := range ju.Roles {
+			_, err = db.ExecContext(ctx, `
+				INSERT INTO user_roles (user_handle, role) VALUES (?, ?)
+				ON CONFLICT DO NOTHING
+			`, ju.Handle, role)
+			if err != nil {
+				return fmt.Errorf("insert role for %s: %w", ju.Handle, err)
+			}
+		}
+	}
+
+	return nil
+}
+
+func loadGamesFromJSON(ctx context.Context, db *sql.DB, path string) error {
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return fmt.Errorf("read games file: %w", err)
+	}
+
+	var games []jsonGame
+	if err := json.Unmarshal(data, &games); err != nil {
+		return fmt.Errorf("parse games json: %w", err)
+	}
+
+	for _, jg := range games {
+		_, err = db.ExecContext(ctx, `
+			INSERT INTO games (id, description) VALUES (?, ?)
+			ON CONFLICT(id) DO UPDATE SET description = excluded.description
+		`, jg.ID, jg.Description)
+		if err != nil {
+			return fmt.Errorf("insert game %s: %w", jg.ID, err)
+		}
+
+		for _, c := range jg.Clans {
+			_, err = db.ExecContext(ctx, `
+				INSERT INTO game_clans (game_id, user_handle, clan_no) VALUES (?, ?, ?)
+				ON CONFLICT(game_id, user_handle) DO UPDATE SET clan_no = excluded.clan_no
+			`, jg.ID, c.Handle, c.Clan)
+			if err != nil {
+				return fmt.Errorf("insert game clan %s/%s: %w", jg.ID, c.Handle, err)
+			}
+		}
+	}
+
+	return nil
+}
+
+func hasRole(roles []string, target string) bool {
+	for _, r := range roles {
+		if r == target {
+			return true
+		}
+	}
+	return false
 }

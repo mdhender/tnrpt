@@ -17,24 +17,36 @@ Stages
 ### Sprint 15 Tasks
 
 #### 15.1 — Auth Foundation
-* [x] Add users table to schema (id, username, password_hash, clan_id)
-* [ ] bcrypt password hashing utilities
+* [x] bcrypt password hashing utilities (web/auth/password.go)
 * [x] Session middleware (cookie-based)
+* [x] Add users, user_roles, game_clans tables to schema.sql
+* [x] Add User/GameClan types and store methods (model/users.go)
+* [x] Add JSON loader for users.json and games.json
 
 #### 15.2 — Login Flow
 * [x] Login page component
-* [x] Login handler (validate credentials, create session)
 * [x] Logout handler
 * [x] Protect routes middleware
+* [x] Update auth.User to include Handle, GameID, ClanNo
+* [x] Update ValidateCredentials to query DB with bcrypt
+* [x] Update --auth-as to accept game:handle format
 
 #### 15.3 — Data Isolation
-* [x] Filter all queries by authenticated user's clan_id
-* [x] Add clan_id column to unit_extracts for indexed filtering
-* [ ] Verify user A cannot see user B's data
+* [x] Update all queries to filter by (game, clan_no) tuple
+* [x] Verify user A cannot see user B's data
+
+**Notes:**
+- User handle is the primary key (e.g., "xtc69", "clan0500")
+- Clan ID is per-game: xtc69 has clan 373 in game 0300, clan 669 in game 0301
+- Session stores (Handle, GameID, ClanNo) for the active game context
+- Data filtering requires both game AND clan_no, not just clan_no
 
 #### 15.4 — SQLite Persistence
-* [ ] Add flag to select in-memory or file-based SQLite
-* [ ] Add migration tooling if needed
+* [x] Add flag to select in-memory or file-based SQLite (--db flag)
+* [x] Add init-db command to create and initialize database
+* [x] Add compact-db command for backup/export
+* [x] WAL mode enabled for file-based SQLite (concurrent access support)
+* [x] Server refuses to start if file-based DB doesn't exist
 
 ---
 

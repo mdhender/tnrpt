@@ -69,6 +69,8 @@ func main() {
 			return nil
 		},
 	}
+	cmdRoot.AddCommand(cmdCompactDB())
+	cmdRoot.AddCommand(cmdInitDB())
 	cmdRoot.AddCommand(cmdParse())
 	cmdRoot.AddCommand(cmdPipeline())
 	cmdRoot.AddCommand(cmdWalk())
@@ -80,6 +82,53 @@ func main() {
 	if err := cmdRoot.Execute(); err != nil {
 		os.Exit(1)
 	}
+}
+
+func cmdCompactDB() *cobra.Command {
+	var cmd = &cobra.Command{
+		Use:          "compact-db <database-path>",
+		Short:        "Compact a SQLite database for backup/export",
+		Long:         `Runs VACUUM and checkpoints WAL to create a single compact database file suitable for backup or export.`,
+		SilenceUsage: true,
+		Args:         cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			dbPath := args[0]
+
+			log.Printf("compact-db: compacting database at %s", dbPath)
+
+			if err := webstore.CompactDatabase(dbPath); err != nil {
+				return fmt.Errorf("compact database: %w", err)
+			}
+
+			log.Printf("compact-db: database compacted successfully")
+			return nil
+		},
+	}
+	return cmd
+}
+
+func cmdInitDB() *cobra.Command {
+	var cmd = &cobra.Command{
+		Use:          "init-db <database-path>",
+		Short:        "Create and initialize a new SQLite database",
+		Long:         `Creates a new SQLite database file and initializes the schema. The database file must not already exist.`,
+		SilenceUsage: true,
+		Args:         cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			dbPath := args[0]
+
+			log.Printf("init-db: creating database at %s", dbPath)
+
+			if err := webstore.InitDatabase(dbPath); err != nil {
+				return fmt.Errorf("init database: %w", err)
+			}
+
+			log.Printf("init-db: database created successfully")
+			log.Printf("init-db: WAL mode enabled for concurrent access")
+			return nil
+		},
+	}
+	return cmd
 }
 
 func cmdParse() *cobra.Command {

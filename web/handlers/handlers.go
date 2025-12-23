@@ -26,6 +26,7 @@ func New(s *store.SQLiteStore, sessions *auth.SessionStore) *Handlers {
 }
 
 // getLayoutData returns layout data with turns for the authenticated user.
+// It reads ?game= from the query string to determine which game context to use.
 func (h *Handlers) getLayoutData(r *http.Request, session *auth.Session) templates.LayoutData {
 	var data templates.LayoutData
 	data.CurrentPath = r.URL.Path
@@ -35,7 +36,32 @@ func (h *Handlers) getLayoutData(r *http.Request, session *auth.Session) templat
 		return data
 	}
 
-	turns, err := h.store.TurnsByClan(session.User.ClanID)
+	data.UserHandle = session.User.Handle
+
+	// Get all games for this user
+	games, err := h.store.GetGamesForUser(r.Context(), session.User.Handle)
+	if err != nil {
+		log.Printf("warning: failed to get games for user: %v", err)
+		return data
+	}
+	data.Games = games
+
+	// Determine current game from ?game= param, defaulting to first game
+	gameID := r.URL.Query().Get("game")
+	if gameID == "" && len(games) > 0 {
+		gameID = games[0].GameID
+	}
+	data.CurrentGameID = gameID
+
+	// Find clan number for current game
+	for _, g := range games {
+		if g.GameID == gameID {
+			data.CurrentClanNo = g.ClanNo
+			break
+		}
+	}
+
+	turns, err := h.store.TurnsByGameClan(gameID, data.CurrentClanNo)
 	if err != nil {
 		log.Printf("warning: failed to get turns: %v", err)
 		return data
@@ -62,12 +88,21 @@ func (h *Handlers) Sessions() *auth.SessionStore {
 }
 
 // SetAutoAuth configures automatic authentication for testing.
-// The username should be like "clan0500" which extracts ClanID "0500".
-func (h *Handlers) SetAutoAuth(username string) {
-	if len(username) >= 8 && username[:4] == "clan" {
-		h.autoAuthUser = &auth.User{
-			Username: username,
-			ClanID:   username[4:],
+// Format: "game:handle" (e.g., "0301:xtc69" or "0301:clan0500")
+func (h *Handlers) SetAutoAuth(gameID, handle string, clanNo int) {
+	h.autoAuthUser = &auth.User{
+		Handle:   handle,
+		UserName: handle,
+		GameID:   gameID,
+		ClanNo:   clanNo,
+	}
+}
+
+func splitGameHandle(s string) []string {
+	for i, c := range s {
+		if c == ':' {
+			return []string{s[:i], s[i+1:]}
 		}
 	}
+	return nil
 }
