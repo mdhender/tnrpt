@@ -14,13 +14,31 @@ type LayoutData struct {
 	SelectedTurn   int
 	Version        string
 	HideTurnSelect bool
+	Games          []store.UserGame // games user belongs to
+	CurrentGameID  string           // currently selected game
+	CurrentClanNo  int              // clan number in current game
+	UserHandle     string           // user's handle for display
 }
 
 func (d LayoutData) LinkWithTurn(path string) string {
-	if d.SelectedTurn > 0 {
-		return path + "?turn=" + strconv.Itoa(d.SelectedTurn)
+	params := ""
+	if d.CurrentGameID != "" && len(d.Games) > 1 {
+		params = "?game=" + d.CurrentGameID
+		if d.SelectedTurn > 0 {
+			params += "&turn=" + strconv.Itoa(d.SelectedTurn)
+		}
+	} else if d.SelectedTurn > 0 {
+		params = "?turn=" + strconv.Itoa(d.SelectedTurn)
 	}
-	return path
+	return path + params
+}
+
+func (d LayoutData) GameSwitchURL(gameID string) string {
+	params := "?game=" + gameID
+	if d.SelectedTurn > 0 {
+		params += "&turn=" + strconv.Itoa(d.SelectedTurn)
+	}
+	return d.CurrentPath + params
 }
 
 script redirectWithTurn(path string) {
@@ -53,7 +71,24 @@ templ LayoutWithData(title string, data LayoutData) {
 				</div>
 				if ctx.Value("username") != nil {
 					<div class="user-info">
-						{ ctx.Value("username").(string) }
+						<span class="user-handle">{ ctx.Value("username").(string) }</span>
+						if len(data.Games) > 1 {
+							<select class="game-select" onchange="window.location.href=this.value">
+								for _, g := range data.Games {
+									if g.GameID == data.CurrentGameID {
+										<option value={ data.GameSwitchURL(g.GameID) } selected>
+											{ g.Description } (Clan { strconv.Itoa(g.ClanNo) })
+										</option>
+									} else {
+										<option value={ data.GameSwitchURL(g.GameID) }>
+											{ g.Description } (Clan { strconv.Itoa(g.ClanNo) })
+										</option>
+									}
+								}
+							</select>
+						} else if len(data.Games) == 1 {
+							<span class="game-info">{ data.Games[0].Description }</span>
+						}
 						<a href="/logout">Logout</a>
 					</div>
 				}

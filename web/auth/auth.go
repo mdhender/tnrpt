@@ -5,16 +5,16 @@ package auth
 import (
 	"crypto/rand"
 	"encoding/hex"
-	"fmt"
 	"net/http"
-	"strings"
 	"sync"
 	"time"
 )
 
 type User struct {
-	Username string
-	ClanID   string
+	Handle   string // user's unique handle (e.g., "xtc69", "clan0500")
+	UserName string // display name
+	GameID   string // active game context
+	ClanNo   int    // clan number in the active game
 }
 
 type Session struct {
@@ -75,30 +75,6 @@ func generateSessionID() string {
 }
 
 const SessionCookieName = "tnrpt_session"
-
-func ValidateCredentials(username, password string) (*User, bool) {
-	username = strings.ToLower(strings.TrimSpace(username))
-	password = strings.TrimSpace(password)
-
-	if !strings.HasPrefix(username, "clan") {
-		return nil, false
-	}
-
-	clanID := strings.TrimPrefix(username, "clan")
-	if len(clanID) != 4 {
-		return nil, false
-	}
-
-	expectedPassword := fmt.Sprintf("clan-%s", clanID)
-	if password != expectedPassword {
-		return nil, false
-	}
-
-	return &User{
-		Username: username,
-		ClanID:   clanID,
-	}, true
-}
 
 func SetSessionCookie(w http.ResponseWriter, session *Session) {
 	http.SetCookie(w, &http.Cookie{

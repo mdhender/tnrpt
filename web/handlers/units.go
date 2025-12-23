@@ -24,7 +24,7 @@ func (h *Handlers) Units(w http.ResponseWriter, r *http.Request) {
 
 	layoutData := h.getLayoutData(r, session)
 
-	units, err := h.store.UnitsByClan(session.User.ClanID, layoutData.SelectedTurn)
+	units, err := h.store.UnitsByGameClan(layoutData.CurrentGameID, layoutData.CurrentClanNo, layoutData.SelectedTurn)
 	if err != nil {
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
 		return
@@ -66,7 +66,7 @@ func (h *Handlers) UnitDetail(w http.ResponseWriter, r *http.Request) {
 	layoutData := h.getLayoutData(r, session)
 	layoutData.HideTurnSelect = true
 
-	unit, err := h.store.UnitByIDAndClan(id, session.User.ClanID)
+	unit, err := h.store.UnitByIDAndGameClan(id, layoutData.CurrentGameID, layoutData.CurrentClanNo)
 	if err != nil {
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
 		return

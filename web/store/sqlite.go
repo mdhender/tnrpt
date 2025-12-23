@@ -7,9 +7,11 @@ import (
 	"database/sql"
 	_ "embed"
 	"fmt"
+	"os"
 	"time"
 
 	"github.com/mdhender/tnrpt/model"
+	"github.com/mdhender/tnrpt/web/auth"
 	_ "modernc.org/sqlite"
 )
 
@@ -22,21 +24,122 @@ type SQLiteStore struct {
 	db *sql.DB
 }
 
+// StoreConfig holds configuration for creating a SQLiteStore.
+type StoreConfig struct {
+	// Path is the file path for file-based SQLite.
+	// If empty, an in-memory database is used.
+	Path string
+
+	// InitSchema controls whether to run schema initialization.
+	// For file-based mode, this should typically be false since the server
+	// expects the database to already exist with schema applied.
+	InitSchema bool
+}
+
 // NewSQLiteStore creates a new in-memory SQLite store with schema loaded.
 func NewSQLiteStore() (*SQLiteStore, error) {
-	dsn := "file::memory:?cache=shared&_pragma=foreign_keys(1)"
+	return NewSQLiteStoreWithConfig(StoreConfig{InitSchema: true})
+}
+
+// NewSQLiteStoreWithConfig creates a SQLite store based on the provided configuration.
+// For file-based mode (Path is set), the database file MUST already exist.
+// Use InitDatabase to create and initialize a new database file.
+func NewSQLiteStoreWithConfig(cfg StoreConfig) (*SQLiteStore, error) {
+	var dsn string
+
+	if cfg.Path == "" {
+		// In-memory mode
+		dsn = "file::memory:?cache=shared&_pragma=foreign_keys(1)"
+	} else {
+		// File-based mode: verify the database file exists before opening
+		// (SQLite will create it automatically otherwise, which we don't want)
+		if _, err := os.Stat(cfg.Path); os.IsNotExist(err) {
+			return nil, fmt.Errorf("database file does not exist: %s (run init-db command to create it)", cfg.Path)
+		}
+
+		// Apply PRAGMA's per-connection via DSN so the pool always has them.
+		// modernc.org/sqlite supports repeated _pragma=... parameters.
+		dsn = fmt.Sprintf(
+			"file:%s?_pragma=journal_mode(WAL)&_pragma=synchronous(NORMAL)&_pragma=foreign_keys(ON)&_pragma=busy_timeout(5000)",
+			cfg.Path,
+		)
+	}
+
 	db, err := sql.Open("sqlite", dsn)
 	if err != nil {
 		return nil, fmt.Errorf("open database: %w", err)
 	}
 
-	// Run the embedded schema
-	if _, err := db.Exec(schemaSQL); err != nil {
-		db.Close()
-		return nil, fmt.Errorf("exec schema: %w", err)
+	// Initialize schema if requested (always true for in-memory, configurable for file-based)
+	if cfg.InitSchema || cfg.Path == "" {
+		if _, err := db.Exec(schemaSQL); err != nil {
+			db.Close()
+			return nil, fmt.Errorf("exec schema: %w", err)
+		}
 	}
 
 	return &SQLiteStore{db: db}, nil
+}
+
+// InitDatabase creates a new SQLite database file and initializes the schema.
+// This should be called by an init-db command before starting the server in file-based mode.
+// Returns an error if the file already exists.
+func InitDatabase(path string) error {
+	// Check if file already exists
+	if _, err := os.Stat(path); err == nil {
+		return fmt.Errorf("database file already exists: %s", path)
+	}
+
+	// Apply PRAGMA's per-connection via DSN so the pool always has them.
+	dsn := fmt.Sprintf(
+		"file:%s?_pragma=journal_mode(WAL)&_pragma=synchronous(NORMAL)&_pragma=foreign_keys(ON)&_pragma=busy_timeout(5000)",
+		path,
+	)
+
+	db, err := sql.Open("sqlite", dsn)
+	if err != nil {
+		return fmt.Errorf("open database: %w", err)
+	}
+	defer db.Close()
+
+	// Run the embedded schema to create tables
+	if _, err := db.Exec(schemaSQL); err != nil {
+		return fmt.Errorf("exec schema: %w", err)
+	}
+
+	return nil
+}
+
+// CompactDatabase compacts a SQLite database file by running VACUUM and checkpointing WAL.
+// This creates a single compact database file suitable for backup or export.
+func CompactDatabase(path string) error {
+	// Check if file exists
+	if _, err := os.Stat(path); os.IsNotExist(err) {
+		return fmt.Errorf("database file does not exist: %s", path)
+	}
+
+	dsn := fmt.Sprintf(
+		"file:%s?_pragma=journal_mode(WAL)&_pragma=foreign_keys(ON)",
+		path,
+	)
+
+	db, err := sql.Open("sqlite", dsn)
+	if err != nil {
+		return fmt.Errorf("open database: %w", err)
+	}
+	defer db.Close()
+
+	// Checkpoint WAL to merge all changes into the main database file
+	if _, err := db.Exec("PRAGMA wal_checkpoint(TRUNCATE)"); err != nil {
+		return fmt.Errorf("checkpoint WAL: %w", err)
+	}
+
+	// VACUUM rebuilds the database file, repacking it into minimal disk space
+	if _, err := db.Exec("VACUUM"); err != nil {
+		return fmt.Errorf("vacuum: %w", err)
+	}
+
+	return nil
 }
 
 // Close closes the database connection.
@@ -407,6 +510,36 @@ func (s *SQLiteStore) UnitsByClan(clanID string, turnNo int) ([]*model.UnitX, er
 	return s.queryUnitsWithArgs(query, clanSuffix)
 }
 
+// UnitsByGameClan returns units filtered by game and clan number.
+func (s *SQLiteStore) UnitsByGameClan(gameID string, clanNo int, turnNo int) ([]*model.UnitX, error) {
+	clanStr := formatClanNo(clanNo)
+
+	if turnNo > 0 {
+		const query = `
+			SELECT u.id, u.report_x_id, u.unit_id, u.turn_no,
+			       u.start_grid, u.start_col, u.start_row,
+			       u.end_grid, u.end_col, u.end_row
+			FROM unit_extracts u
+			JOIN report_extracts r ON u.report_x_id = r.id
+			WHERE r.game = ? AND u.clan_id = ? AND u.turn_no = ?
+			ORDER BY u.unit_id, u.turn_no
+		`
+		return s.queryUnitsWithArgs(query, gameID, clanStr, turnNo)
+	}
+
+	const query = `
+		SELECT u.id, u.report_x_id, u.unit_id, u.turn_no,
+		       u.start_grid, u.start_col, u.start_row,
+		       u.end_grid, u.end_col, u.end_row
+		FROM unit_extracts u
+		JOIN report_extracts r ON u.report_x_id = r.id
+		WHERE r.game = ? AND u.clan_id = ?
+		ORDER BY u.unit_id, u.turn_no
+	`
+
+	return s.queryUnitsWithArgs(query, gameID, clanStr)
+}
+
 // UnitByID returns a single unit by database ID.
 func (s *SQLiteStore) UnitByID(id int64) (*model.UnitX, error) {
 	const query = `
@@ -443,6 +576,29 @@ func (s *SQLiteStore) UnitByIDAndClan(id int64, clanID string) (*model.UnitX, er
 	`
 
 	units, err := s.queryUnitsWithArgs(query, id, clanSuffix)
+	if err != nil {
+		return nil, err
+	}
+	if len(units) == 0 {
+		return nil, nil
+	}
+	return units[0], nil
+}
+
+// UnitByIDAndGameClan returns a single unit by database ID, verifying game and clan ownership.
+func (s *SQLiteStore) UnitByIDAndGameClan(id int64, gameID string, clanNo int) (*model.UnitX, error) {
+	clanStr := formatClanNo(clanNo)
+
+	const query = `
+		SELECT u.id, u.report_x_id, u.unit_id, u.turn_no,
+		       u.start_grid, u.start_col, u.start_row,
+		       u.end_grid, u.end_col, u.end_row
+		FROM unit_extracts u
+		JOIN report_extracts r ON u.report_x_id = r.id
+		WHERE u.id = ? AND r.game = ? AND u.clan_id = ?
+	`
+
+	units, err := s.queryUnitsWithArgs(query, id, gameID, clanStr)
 	if err != nil {
 		return nil, err
 	}
@@ -706,6 +862,61 @@ func (s *SQLiteStore) MovementsByClan(clanID string, turnNo int) ([]Movement, er
 	return movements, rows.Err()
 }
 
+// MovementsByGameClan returns movement steps filtered by game and clan number.
+func (s *SQLiteStore) MovementsByGameClan(gameID string, clanNo int, turnNo int) ([]Movement, error) {
+	clanStr := formatClanNo(clanNo)
+
+	var rows *sql.Rows
+	var err error
+
+	if turnNo > 0 {
+		const query = `
+			SELECT u.unit_id, u.turn_no, a.seq, st.seq, st.dir, st.ok, st.fail_why, st.terr
+			FROM steps st
+			JOIN acts a ON st.act_id = a.id
+			JOIN unit_extracts u ON a.unit_x_id = u.id
+			JOIN report_extracts r ON u.report_x_id = r.id
+			WHERE st.kind = 'adv' AND st.dir IS NOT NULL AND st.dir != ''
+			  AND r.game = ? AND u.clan_id = ? AND u.turn_no = ?
+			ORDER BY u.turn_no, u.unit_id, a.seq, st.seq
+		`
+		rows, err = s.db.Query(query, gameID, clanStr, turnNo)
+	} else {
+		const query = `
+			SELECT u.unit_id, u.turn_no, a.seq, st.seq, st.dir, st.ok, st.fail_why, st.terr
+			FROM steps st
+			JOIN acts a ON st.act_id = a.id
+			JOIN unit_extracts u ON a.unit_x_id = u.id
+			JOIN report_extracts r ON u.report_x_id = r.id
+			WHERE st.kind = 'adv' AND st.dir IS NOT NULL AND st.dir != ''
+			  AND r.game = ? AND u.clan_id = ?
+			ORDER BY u.turn_no, u.unit_id, a.seq, st.seq
+		`
+		rows, err = s.db.Query(query, gameID, clanStr)
+	}
+	if err != nil {
+		return nil, fmt.Errorf("query movements: %w", err)
+	}
+	defer rows.Close()
+
+	var movements []Movement
+	for rows.Next() {
+		var m Movement
+		var ok sql.NullInt64
+		var failWhy, terr sql.NullString
+
+		if err := rows.Scan(&m.UnitID, &m.TurnNo, &m.ActSeq, &m.StepSeq, &m.Dir, &ok, &failWhy, &terr); err != nil {
+			return nil, fmt.Errorf("scan movement: %w", err)
+		}
+
+		m.Ok = ok.Valid && ok.Int64 == 1
+		m.FailWhy = failWhy.String
+		m.Terr = terr.String
+		movements = append(movements, m)
+	}
+	return movements, rows.Err()
+}
+
 // Resource represents a resource sighting.
 type Resource struct {
 	UnitID  string
@@ -781,6 +992,60 @@ func (s *SQLiteStore) ResourcesByClan(clanID string, turnNo int) ([]Resource, er
 			ORDER BY r.kind, u.turn_no, u.unit_id
 		`
 		rows, err = s.db.Query(query, clanSuffix)
+	}
+	if err != nil {
+		return nil, fmt.Errorf("query resources: %w", err)
+	}
+	defer rows.Close()
+
+	var resources []Resource
+	for rows.Next() {
+		var r Resource
+		var qty sql.NullInt64
+		var terr sql.NullString
+
+		if err := rows.Scan(&r.UnitID, &r.TurnNo, &r.Kind, &qty, &terr); err != nil {
+			return nil, fmt.Errorf("scan resource: %w", err)
+		}
+
+		r.Qty = int(qty.Int64)
+		r.Terrain = terr.String
+		resources = append(resources, r)
+	}
+	return resources, rows.Err()
+}
+
+// ResourcesByGameClan returns resources filtered by game and clan number.
+func (s *SQLiteStore) ResourcesByGameClan(gameID string, clanNo int, turnNo int) ([]Resource, error) {
+	clanStr := formatClanNo(clanNo)
+
+	var rows *sql.Rows
+	var err error
+
+	if turnNo > 0 {
+		const query = `
+			SELECT u.unit_id, u.turn_no, r.kind, r.qty, st.terr
+			FROM step_enc_rsrc r
+			JOIN steps st ON r.step_id = st.id
+			JOIN acts a ON st.act_id = a.id
+			JOIN unit_extracts u ON a.unit_x_id = u.id
+			JOIN report_extracts re ON u.report_x_id = re.id
+			WHERE re.game = ? AND u.clan_id = ? AND u.turn_no = ?
+			ORDER BY r.kind, u.turn_no, u.unit_id
+		`
+		rows, err = s.db.Query(query, gameID, clanStr, turnNo)
+	} else {
+		const query = `
+			SELECT u.unit_id, u.turn_no, r.kind, r.qty, st.terr
+			FROM step_enc_rsrc r
+			JOIN steps st ON r.step_id = st.id
+			JOIN acts a ON st.act_id = a.id
+			JOIN unit_extracts u ON a.unit_x_id = u.id
+			JOIN report_extracts re ON u.report_x_id = re.id
+			WHERE re.game = ? AND u.clan_id = ?
+			ORDER BY r.kind, u.turn_no, u.unit_id
+		`
+		rows, err = s.db.Query(query, gameID, clanStr)
 	}
 	if err != nil {
 		return nil, fmt.Errorf("query resources: %w", err)
@@ -902,6 +1167,60 @@ func (s *SQLiteStore) TerrainObservationsByClan(clanID string, turnNo int) ([]Te
 	return obs, rows.Err()
 }
 
+// TerrainObservationsByGameClan returns terrain observations filtered by game and clan number.
+func (s *SQLiteStore) TerrainObservationsByGameClan(gameID string, clanNo int, turnNo int) ([]TerrainObs, error) {
+	clanStr := formatClanNo(clanNo)
+
+	var rows *sql.Rows
+	var err error
+
+	if turnNo > 0 {
+		const query = `
+			SELECT u.unit_id, u.turn_no, st.terr, st.special, st.label
+			FROM steps st
+			JOIN acts a ON st.act_id = a.id
+			JOIN unit_extracts u ON a.unit_x_id = u.id
+			JOIN report_extracts r ON u.report_x_id = r.id
+			WHERE st.terr IS NOT NULL AND st.terr != ''
+			  AND r.game = ? AND u.clan_id = ? AND u.turn_no = ?
+			ORDER BY st.terr, u.turn_no, u.unit_id
+		`
+		rows, err = s.db.Query(query, gameID, clanStr, turnNo)
+	} else {
+		const query = `
+			SELECT u.unit_id, u.turn_no, st.terr, st.special, st.label
+			FROM steps st
+			JOIN acts a ON st.act_id = a.id
+			JOIN unit_extracts u ON a.unit_x_id = u.id
+			JOIN report_extracts r ON u.report_x_id = r.id
+			WHERE st.terr IS NOT NULL AND st.terr != ''
+			  AND r.game = ? AND u.clan_id = ?
+			ORDER BY st.terr, u.turn_no, u.unit_id
+		`
+		rows, err = s.db.Query(query, gameID, clanStr)
+	}
+	if err != nil {
+		return nil, fmt.Errorf("query terrain: %w", err)
+	}
+	defer rows.Close()
+
+	var obs []TerrainObs
+	for rows.Next() {
+		var t TerrainObs
+		var special int
+		var label sql.NullString
+
+		if err := rows.Scan(&t.UnitID, &t.TurnNo, &t.Terrain, &special, &label); err != nil {
+			return nil, fmt.Errorf("scan terrain: %w", err)
+		}
+
+		t.Special = special == 1
+		t.Label = label.String
+		obs = append(obs, t)
+	}
+	return obs, rows.Err()
+}
+
 // TileDetail represents detailed tile information for a specific location.
 type TileDetail struct {
 	Grid      string
@@ -970,6 +1289,54 @@ func (s *SQLiteStore) TileDetailByCoord(grid string, col, row int, clanID string
 	return detail, rows.Err()
 }
 
+// TileDetailByGameClanCoord returns detailed tile information for a grid location, filtered by game and clan.
+func (s *SQLiteStore) TileDetailByGameClanCoord(grid string, col, row int, gameID string, clanNo int) (*TileDetail, error) {
+	clanStr := formatClanNo(clanNo)
+
+	const query = `
+		SELECT u.unit_id, u.turn_no, st.terr, st.special, st.label
+		FROM steps st
+		JOIN acts a ON st.act_id = a.id
+		JOIN unit_extracts u ON a.unit_x_id = u.id
+		JOIN report_extracts r ON u.report_x_id = r.id
+		WHERE st.terr IS NOT NULL AND st.terr != ''
+		  AND r.game = ? AND u.clan_id = ?
+		  AND (
+		      (u.end_grid = ? AND u.end_col = ? AND u.end_row = ?)
+		      OR (u.start_grid = ? AND u.start_col = ? AND u.start_row = ?)
+		  )
+		ORDER BY u.turn_no, u.unit_id
+	`
+
+	rows, err := s.db.Query(query, gameID, clanStr, grid, col, row, grid, col, row)
+	if err != nil {
+		return nil, fmt.Errorf("query tile detail: %w", err)
+	}
+	defer rows.Close()
+
+	detail := &TileDetail{
+		Grid:  grid,
+		Col:   col,
+		Row:   row,
+		Coord: fmt.Sprintf("%s %02d%02d", grid, col, row),
+	}
+
+	for rows.Next() {
+		var sg TileSighting
+		var special int
+		var label sql.NullString
+
+		if err := rows.Scan(&sg.UnitID, &sg.TurnNo, &sg.Terrain, &special, &label); err != nil {
+			return nil, fmt.Errorf("scan tile sighting: %w", err)
+		}
+
+		sg.Special = special == 1
+		sg.Label = label.String
+		detail.Sightings = append(detail.Sightings, sg)
+	}
+	return detail, rows.Err()
+}
+
 // Stats returns basic statistics about the store.
 func (s *SQLiteStore) Stats() Stats {
 
@@ -1033,6 +1400,13 @@ func (s *SQLiteStore) TurnsByClan(clanID string) ([]int, error) {
 
 // Helper functions
 
+func formatClanNo(clanNo int) string {
+	if clanNo < 100 {
+		return fmt.Sprintf("%03d", clanNo)
+	}
+	return fmt.Sprintf("%d", clanNo)
+}
+
 func parseTNCoord(tn model.TNCoord) (grid string, col, row int) {
 	str := string(tn)
 	if str == "" || str == "N/A" {
@@ -1073,4 +1447,163 @@ func nullInt(n int) sql.NullInt64 {
 		return sql.NullInt64{}
 	}
 	return sql.NullInt64{Int64: int64(n), Valid: true}
+}
+
+// User authentication methods
+
+// ValidateCredentials checks username/password and returns an auth.User if valid.
+func (s *SQLiteStore) ValidateCredentials(ctx context.Context, handle, password, gameID string) (*auth.User, error) {
+	const userQuery = `SELECT handle, user_name, password_hash FROM users WHERE handle = ?`
+
+	var dbHandle, userName, passwordHash string
+	err := s.db.QueryRowContext(ctx, userQuery, handle).Scan(&dbHandle, &userName, &passwordHash)
+	if err == sql.ErrNoRows {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, fmt.Errorf("query user: %w", err)
+	}
+
+	// Check if user is active
+	active, err := s.isUserActive(ctx, handle)
+	if err != nil {
+		return nil, err
+	}
+	if !active {
+		return nil, nil
+	}
+
+	// Verify password
+	if !auth.CheckPassword(password, passwordHash) {
+		return nil, nil
+	}
+
+	// Get clan for this game
+	clanNo, err := s.getClanForUser(ctx, gameID, handle)
+	if err != nil {
+		return nil, err
+	}
+
+	return &auth.User{
+		Handle:   dbHandle,
+		UserName: userName,
+		GameID:   gameID,
+		ClanNo:   clanNo,
+	}, nil
+}
+
+func (s *SQLiteStore) isUserActive(ctx context.Context, handle string) (bool, error) {
+	const query = `SELECT role FROM user_roles WHERE user_handle = ?`
+	rows, err := s.db.QueryContext(ctx, query, handle)
+	if err != nil {
+		return false, fmt.Errorf("query roles: %w", err)
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var role string
+		if err := rows.Scan(&role); err != nil {
+			return false, err
+		}
+		if role == "active" {
+			return true, nil
+		}
+	}
+	return false, rows.Err()
+}
+
+func (s *SQLiteStore) getClanForUser(ctx context.Context, gameID, handle string) (int, error) {
+	const query = `SELECT clan_no FROM game_clans WHERE game_id = ? AND user_handle = ?`
+	var clanNo int
+	err := s.db.QueryRowContext(ctx, query, gameID, handle).Scan(&clanNo)
+	if err == sql.ErrNoRows {
+		return 0, nil
+	}
+	if err != nil {
+		return 0, fmt.Errorf("query clan: %w", err)
+	}
+	return clanNo, nil
+}
+
+// GetClanForUser returns the clan number for a user in a specific game (exported version).
+func (s *SQLiteStore) GetClanForUser(ctx context.Context, gameID, handle string) (int, error) {
+	return s.getClanForUser(ctx, gameID, handle)
+}
+
+// TurnsByGameClan returns distinct turn numbers filtered by game and clan.
+func (s *SQLiteStore) TurnsByGameClan(gameID string, clanNo int) ([]int, error) {
+	clanStr := fmt.Sprintf("%d", clanNo)
+	if clanNo < 100 {
+		clanStr = fmt.Sprintf("%03d", clanNo)
+	}
+
+	const query = `
+		SELECT DISTINCT u.turn_no 
+		FROM unit_extracts u
+		JOIN report_extracts r ON u.report_x_id = r.id
+		WHERE r.game = ? AND u.clan_id = ?
+		ORDER BY u.turn_no
+	`
+
+	rows, err := s.db.Query(query, gameID, clanStr)
+	if err != nil {
+		return nil, fmt.Errorf("query turns: %w", err)
+	}
+	defer rows.Close()
+
+	var turns []int
+	for rows.Next() {
+		var t int
+		if err := rows.Scan(&t); err != nil {
+			return nil, fmt.Errorf("scan turn: %w", err)
+		}
+		turns = append(turns, t)
+	}
+	return turns, rows.Err()
+}
+
+// LoadUsersFromJSON loads users from a JSON file.
+func (s *SQLiteStore) LoadUsersFromJSON(ctx context.Context, path string) error {
+	return loadUsersFromJSON(ctx, s.db, path)
+}
+
+// LoadGamesFromJSON loads games from a JSON file.
+func (s *SQLiteStore) LoadGamesFromJSON(ctx context.Context, path string) error {
+	return loadGamesFromJSON(ctx, s.db, path)
+}
+
+// UserGame represents a game the user belongs to with their clan number.
+type UserGame struct {
+	GameID      string
+	Description string
+	ClanNo      int
+}
+
+// GetGamesForUser returns all games a user belongs to, sorted by game ID.
+func (s *SQLiteStore) GetGamesForUser(ctx context.Context, handle string) ([]UserGame, error) {
+	const query = `
+		SELECT g.id, g.description, gc.clan_no
+		FROM games g
+		JOIN game_clans gc ON g.id = gc.game_id
+		WHERE gc.user_handle = ?
+		ORDER BY g.id
+	`
+
+	rows, err := s.db.QueryContext(ctx, query, handle)
+	if err != nil {
+		return nil, fmt.Errorf("query games: %w", err)
+	}
+	defer rows.Close()
+
+	var games []UserGame
+	for rows.Next() {
+		var g UserGame
+		var desc sql.NullString
+		if err := rows.Scan(&g.GameID, &desc, &g.ClanNo); err != nil {
+			return nil, fmt.Errorf("scan game: %w", err)
+		}
+		g.Description = desc.String
+		games = append(games, g)
+	}
+	return games, rows.Err()
 }

@@ -24,7 +24,7 @@ func (h *Handlers) Terrain(w http.ResponseWriter, r *http.Request) {
 
 	layoutData := h.getLayoutData(r, session)
 
-	observations, err := h.store.TerrainObservationsByClan(session.User.ClanID, layoutData.SelectedTurn)
+	observations, err := h.store.TerrainObservationsByGameClan(layoutData.CurrentGameID, layoutData.CurrentClanNo, layoutData.SelectedTurn)
 	if err != nil {
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
 		return
@@ -74,7 +74,7 @@ func (h *Handlers) TileDetail(w http.ResponseWriter, r *http.Request) {
 	layoutData := h.getLayoutData(r, session)
 	layoutData.HideTurnSelect = true
 
-	tile, err := h.store.TileDetailByCoord(grid, col, row, session.User.ClanID)
+	tile, err := h.store.TileDetailByGameClanCoord(grid, col, row, layoutData.CurrentGameID, layoutData.CurrentClanNo)
 	if err != nil {
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
 		return

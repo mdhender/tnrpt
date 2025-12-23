@@ -50,11 +50,20 @@ func (h *Handlers) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	username := r.FormValue("username")
+	handle := r.FormValue("username")
 	password := r.FormValue("password")
+	gameID := r.FormValue("game")
+	if gameID == "" {
+		gameID = "0301" // default game
+	}
 
-	user, ok := auth.ValidateCredentials(username, password)
-	if !ok {
+	user, err := h.store.ValidateCredentials(r.Context(), handle, password, gameID)
+	if err != nil {
+		w.Header().Set("Content-Type", "text/html; charset=utf-8")
+		templates.LoginPage("Authentication error", data).Render(r.Context(), w)
+		return
+	}
+	if user == nil {
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		templates.LoginPage("Invalid username or password", data).Render(r.Context(), w)
 		return
@@ -86,7 +95,7 @@ func (h *Handlers) RequireAuth(next http.HandlerFunc) http.HandlerFunc {
 				return
 			}
 		}
-		r = withUsername(r, session.User.Username)
+		r = withUsername(r, session.User.Handle)
 		next(w, r)
 	}
 }
