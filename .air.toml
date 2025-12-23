@@ -6,26 +6,26 @@ root = "."
 tmp_dir = "tmp"
 
 [build]
-  # Pre-build command: generate templ files
-  pre_cmd = ["templ generate ./web/templates/"]
+  ## Pre-build command: generate templ files
+  #pre_cmd = ["templ generate ./web/templates/"]
   # Build command
-  cmd = "go build -o ./tmp/main ./cmd/server"
+  cmd = "templ generate -lazy && go build -o ./tmp/main ./cmd/server"
   # Binary to run
   bin = "./tmp/main"
   # Arguments to pass to the binary
-  args_bin = ["--addr", ":9797", "--auth-as", "clan0506"]
+  args_bin = ["--addr", ":9797"]
   # Watch these extensions
-  include_ext = ["go", "templ", "css"]
+  include_ext = ["css", "go", "html", "templ", "tmpl", "tpl"]
   # Exclude these directories
-  exclude_dir = ["tmp", "vendor", ".git", ".idea", "testdata"]
+  exclude_dir = [".git", ".idea", "data", "testdata", "tmp", "vendor"]
   # Exclude files matching these patterns
   exclude_file = []
-  # Exclude unchanged files
+  exclude_regex = [".*_templ.go"]
   exclude_unchanged = false
   # Follow symlinks
   follow_symlink = false
   # Delay before rebuilding (ms)
-  delay = 500
+  delay = 1000
   # Stop old binary before building
   stop_on_error = true
   # Send interrupt signal before killing

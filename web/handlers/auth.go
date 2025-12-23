@@ -99,3 +99,22 @@ func (h *Handlers) RequireAuth(next http.HandlerFunc) http.HandlerFunc {
 		next(w, r)
 	}
 }
+
+// RequireGM wraps a handler to require both authentication and GM role.
+func (h *Handlers) RequireGM(next http.HandlerFunc) http.HandlerFunc {
+	return h.RequireAuth(func(w http.ResponseWriter, r *http.Request) {
+		session := auth.GetSessionFromRequest(r, h.sessions)
+		if session == nil {
+			http.Redirect(w, r, "/login", http.StatusSeeOther)
+			return
+		}
+
+		isGM, err := h.store.IsUserGM(r.Context(), session.User.Handle)
+		if err != nil || !isGM {
+			http.Error(w, "Forbidden: GM role required", http.StatusForbidden)
+			return
+		}
+
+		next(w, r)
+	})
+}

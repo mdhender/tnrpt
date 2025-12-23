@@ -1,0 +1,72 @@
+// Copyright (c) 2025 Michael D Henderson. All rights reserved.
+
+package templates
+
+import (
+	"fmt"
+	"github.com/mdhender/tnrpt/web/store"
+)
+
+templ SQLConsole(query string, result *store.QueryResult, data LayoutData) {
+	@LayoutWithData("SQL Console", data) {
+		<h1>SQL Console</h1>
+		<p class="admin-warning">Admin-only: Execute raw SQL queries against the database.</p>
+		
+		<form method="POST" action="/admin/sql">
+			<div class="sql-input">
+				<label for="query">SQL Query:</label>
+				<textarea 
+					id="query" 
+					name="query" 
+					rows="6" 
+					cols="80"
+					placeholder="SELECT * FROM report_files LIMIT 10;"
+				>{ query }</textarea>
+			</div>
+			<button type="submit">Execute</button>
+		</form>
+
+		if result != nil {
+			<div class="sql-result">
+				if result.Error != "" {
+					<div class="error-message">
+						<strong>Error:</strong> { result.Error }
+					</div>
+				} else {
+					<p>{ formatRowCount(len(result.Rows)) }</p>
+					if len(result.Columns) > 0 {
+						<div class="table-container">
+							<table class="data-table">
+								<thead>
+									<tr>
+										for _, col := range result.Columns {
+											<th>{ col }</th>
+										}
+									</tr>
+								</thead>
+								<tbody>
+									for _, row := range result.Rows {
+										<tr>
+											for _, cell := range row {
+												<td>{ cell }</td>
+											}
+										</tr>
+									}
+								</tbody>
+							</table>
+						</div>
+					}
+				}
+			</div>
+		}
+	}
+}
+
+func formatRowCount(count int) string {
+	if count == 0 {
+		return "No rows returned."
+	} else if count == 1 {
+		return "1 row returned."
+	}
+	return fmt.Sprintf("%d rows returned.", count)
+}

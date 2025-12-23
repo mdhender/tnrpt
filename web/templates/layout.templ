@@ -18,6 +18,7 @@ type LayoutData struct {
 	CurrentGameID  string           // currently selected game
 	CurrentClanNo  int              // clan number in current game
 	UserHandle     string           // user's handle for display
+	IsGM           bool             // true if user has GM role
 }
 
 func (d LayoutData) LinkWithTurn(path string) string {
@@ -60,14 +61,14 @@ templ LayoutWithData(title string, data LayoutData) {
 		<head>
 			<meta charset="UTF-8"/>
 			<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-			<title>{ title } - TribeNet Reports</title>
+			<title>{ title } - OttoMap</title>
 			<script src="https://unpkg.com/htmx.org@2.0.4"></script>
 			<link rel="stylesheet" href="/static/style.css"/>
 		</head>
 		<body>
 			<header>
 				<div class="header-brand">
-					<a href="/">TribeNet Reports</a>
+					<a href="/">OttoMap TribeNet Report Server</a>
 				</div>
 				if ctx.Value("username") != nil {
 					<div class="user-info">
@@ -103,6 +104,9 @@ templ LayoutWithData(title string, data LayoutData) {
 								<li><a href={ templ.SafeURL(data.LinkWithTurn("/movements")) }>Movements</a></li>
 								<li><a href={ templ.SafeURL(data.LinkWithTurn("/terrain")) }>Terrain</a></li>
 								<li><a href={ templ.SafeURL(data.LinkWithTurn("/resources")) }>Resources</a></li>
+								if data.IsGM {
+									<li><a href="/upload">Upload Reports</a></li>
+								}
 							</ul>
 						</nav>
 						if len(data.Turns) > 0 && !data.HideTurnSelect {
@@ -131,7 +135,7 @@ templ LayoutWithData(title string, data LayoutData) {
 				</main>
 			</div>
 			<footer>
-				<p>&copy; 2025 TribeNet Reports | { data.Version }</p>
+				<p>OttoMap TribeNet Report Server | { data.Version }</p>
 			</footer>
 		</body>
 	</html>
@@ -139,7 +143,7 @@ templ LayoutWithData(title string, data LayoutData) {
 
 templ Index(stats store.Stats, data LayoutData) {
 	@LayoutWithData("Home", data) {
-		<h1>Welcome to TribeNet Reports</h1>
+		<h1>Welcome to OttoMap's TribeNet Report Server</h1>
 		<p>Select a turn report to view.</p>
 		<section class="stats">
 			<h2>Data Loaded</h2>

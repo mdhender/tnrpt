@@ -1,0 +1,269 @@
+// Copyright (c) 2025 Michael D Henderson. All rights reserved.
+
+package templates
+
+import "encoding/json"
+
+type GameOption struct {
+	ID          string
+	Description string
+	Turns       []GameTurnOption
+}
+type GameTurnOption struct {
+    ID       string
+    IsActive bool
+}
+
+func turnsToJSON(turns []GameTurnOption) string {
+	data, err := json.Marshal(turns)
+	if err != nil {
+		return "[]"
+	}
+	return string(data)
+}
+
+templ UploadPage(data LayoutData, games []GameOption, selectedGame string, turns []int, selectedTurn int) {
+	@LayoutWithData("Upload Reports", data) {
+		<div class="upload-container">
+			<h1>Upload Turn Reports</h1>
+			<p>Upload turn reports for processing. Files must be named <code>CCCC.docx</code> or <code>GGGG.YYYY-MM.CCCC.report.txt</code>.</p>
+			<div class="upload-config">
+				<div class="form-group">
+					<label for="game-select">Game</label>
+					<select id="game-select" name="game" required>
+						<option value="">Select a game...</option>
+						for _, g := range games {
+							if g.ID == selectedGame {
+								<option value={ g.ID } selected data-turns={ turnsToJSON(g.Turns) }>{ g.Description }</option>
+							} else {
+								<option value={ g.ID } data-turns={ turnsToJSON(g.Turns) }>{ g.Description }</option>
+							}
+						}
+					</select>
+				</div>
+				<div class="form-group">
+					<label for="turn-select">Turn Number</label>
+					<select id="turn-select" name="turn" required>
+						<option value="">Select a turn...</option>
+					</select>
+				</div>
+			</div>
+			<div id="drop-zone" class="drop-zone">
+				<div class="drop-zone-content">
+					<p class="drop-icon">📁</p>
+					<p>Drag & drop files here</p>
+					<p class="drop-hint">or click to select files</p>
+					<input type="file" id="file-input" multiple accept=".docx,.txt" style="display:none"/>
+				</div>
+			</div>
+			<div id="upload-list" class="upload-list"></div>
+		</div>
+		<div id="toast-container" class="toast-container"></div>
+		@uploadScript()
+	}
+}
+
+script uploadScript() {
+	const dropZone = document.getElementById('drop-zone');
+	const fileInput = document.getElementById('file-input');
+	const uploadList = document.getElementById('upload-list');
+	const toastContainer = document.getElementById('toast-container');
+	const gameSelect = document.getElementById('game-select');
+	const turnSelect = document.getElementById('turn-select');
+
+	// Update turn dropdown when game changes
+	gameSelect.addEventListener('change', () => {
+		updateTurnDropdown();
+		updateDropZoneState();
+	});
+
+	// Update drop zone state when turn changes
+	turnSelect.addEventListener('change', () => {
+		updateDropZoneState();
+	});
+
+	function updateDropZoneState() {
+		const isEnabled = gameSelect.value !== '' && turnSelect.value !== '';
+		if (isEnabled) {
+			dropZone.classList.remove('disabled');
+			dropZone.style.opacity = '1';
+			dropZone.style.cursor = 'pointer';
+			dropZone.style.pointerEvents = 'auto';
+		} else {
+			dropZone.classList.add('disabled');
+			dropZone.style.opacity = '0.5';
+			dropZone.style.cursor = 'not-allowed';
+			dropZone.style.pointerEvents = 'none';
+		}
+	}
+
+	// Click to select files
+	dropZone.addEventListener('click', () => {
+		if (gameSelect.value !== '' && turnSelect.value !== '') {
+			fileInput.click();
+		}
+	});
+
+	// Drag and drop handlers
+	dropZone.addEventListener('dragover', (e) => {
+		e.preventDefault();
+		dropZone.classList.add('drag-over');
+	});
+
+	dropZone.addEventListener('dragleave', (e) => {
+		e.preventDefault();
+		dropZone.classList.remove('drag-over');
+	});
+
+	dropZone.addEventListener('drop', (e) => {
+		e.preventDefault();
+		dropZone.classList.remove('drag-over');
+		handleFiles(e.dataTransfer.files);
+	});
+
+	fileInput.addEventListener('change', (e) => {
+		handleFiles(e.target.files);
+	});
+
+	function updateTurnDropdown() {
+		const selectedOption = gameSelect.options[gameSelect.selectedIndex];
+		const turnsJSON = selectedOption.getAttribute('data-turns') || '[]';
+		const turns = JSON.parse(turnsJSON);
+		console.log(turns);
+
+		turnSelect.innerHTML = '<option value="">Select a turn...</option>';
+
+		if (turns.length === 0) {
+			return;
+		}
+
+		// Find first active turn (if any) or first turn
+		let defaultTurnNo = null;
+		for (const turn of turns) {
+		    if (turn.IsActive) {
+		        defaultTurnNo = turn.ID;
+            }
+		}
+
+		// Populate dropdown
+		for (const turn of turns) {
+			const option = document.createElement('option');
+			option.value = turn.ID;
+			option.textContent = turn.ID;
+			option.selected = turn.ID === defaultTurnNo;
+			turnSelect.appendChild(option);
+		}
+	}
+
+	// Initialize turn dropdown if game is already selected
+	if (gameSelect.value) {
+		updateTurnDropdown();
+	}
+
+	// Initialize drop zone state
+	updateDropZoneState();
+
+	function handleFiles(files) {
+		const game = gameSelect.value;
+		const turn = turnSelect.value;
+
+		if (!game) {
+			showToast('Please select a game first.', 'info');
+			return;
+		}
+		if (!turn) {
+			showToast('Please select a turn number first.', 'info');
+			return;
+		}
+
+		uploadList.innerHTML = '';
+
+		for (const file of files) {
+			uploadFile(file, game, turn);
+		}
+	}
+
+	function uploadFile(file, game, turn) {
+		const item = document.createElement('div');
+		item.className = 'upload-item';
+		item.innerHTML = `
+			<span class="upload-name">${file.name}</span>
+			<span class="upload-status uploading">Uploading...</span>
+			<div class="upload-progress"><div class="upload-progress-bar"></div></div>
+		`;
+		uploadList.appendChild(item);
+
+		const progressBar = item.querySelector('.upload-progress-bar');
+		const status = item.querySelector('.upload-status');
+
+		const formData = new FormData();
+		formData.append('file', file);
+		formData.append('game', game);
+		formData.append('turn', turn);
+
+		const xhr = new XMLHttpRequest();
+		xhr.open('POST', '/upload');
+
+		xhr.upload.onprogress = (e) => {
+			if (e.lengthComputable) {
+				const pct = (e.loaded / e.total) * 100;
+				progressBar.style.width = pct + '%';
+			}
+		};
+
+		xhr.onload = () => {
+			if (xhr.status === 200) {
+				const resp = JSON.parse(xhr.responseText);
+				status.textContent = '✓ Success';
+				status.className = 'upload-status success';
+				showToast(`<strong>${file.name}</strong><br>Parsed ${resp.units || 0} units, ${resp.acts || 0} acts, ${resp.steps || 0} steps.`, 'success');
+			} else {
+				let msg = 'Upload failed';
+				try {
+					const resp = JSON.parse(xhr.responseText);
+					msg = resp.error || msg;
+				} catch {}
+				status.textContent = '✗ ' + msg;
+				status.className = 'upload-status error';
+				showToast(`<strong>${file.name}</strong><br>${msg}`, 'error', 8000);
+			}
+		};
+
+		xhr.onerror = () => {
+			status.textContent = '✗ Network error';
+			status.className = 'upload-status error';
+			showToast(`<strong>${file.name}</strong><br>Network error`, 'error', 8000);
+		};
+
+		xhr.send(formData);
+	}
+
+	function showToast(message, type = 'info', duration = 5000) {
+		const icons = {
+			success: '✓',
+			error: '✗',
+			info: 'ℹ'
+		};
+
+		const toast = document.createElement('div');
+		toast.className = `toast toast-${type}`;
+		toast.innerHTML = `
+			<span class="toast-icon">${icons[type]}</span>
+			<div class="toast-content">${message}</div>
+			<button class="toast-close" aria-label="Close">×</button>
+		`;
+
+		const closeBtn = toast.querySelector('.toast-close');
+		closeBtn.addEventListener('click', () => dismissToast(toast));
+
+		toastContainer.appendChild(toast);
+
+		setTimeout(() => dismissToast(toast), duration);
+	}
+
+	function dismissToast(toast) {
+		if (toast.classList.contains('toast-hiding')) return;
+		toast.classList.add('toast-hiding');
+		setTimeout(() => toast.remove(), 300);
+	}
+}

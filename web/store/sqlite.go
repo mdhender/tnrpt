@@ -150,6 +150,69 @@ func (s *SQLiteStore) Close() error {
 	return nil
 }
 
+// Game represents a game in the system.
+type Game struct {
+	ID          string
+	Description string
+	Turns       []GameTurn
+}
+
+// GameTurn represents a turn in a game.
+type GameTurn struct {
+	TurnNo   int
+	IsActive bool
+}
+
+// GetAllGames returns all games with their turns.
+func (s *SQLiteStore) GetAllGames(ctx context.Context) ([]Game, error) {
+	const gameQuery = `SELECT id, COALESCE(description, id) FROM games ORDER BY id`
+	rows, err := s.db.QueryContext(ctx, gameQuery)
+	if err != nil {
+		return nil, fmt.Errorf("query games: %w", err)
+	}
+	defer rows.Close()
+
+	var games []Game
+	for rows.Next() {
+		var g Game
+		if err := rows.Scan(&g.ID, &g.Description); err != nil {
+			return nil, err
+		}
+		g.Turns = []GameTurn{}
+		games = append(games, g)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	// Load turns for each game
+	const turnQuery = `SELECT turn_id, is_active FROM game_turns WHERE game_id = ? ORDER BY turn_id`
+	for i, game := range games {
+		turnRows, err := s.db.QueryContext(ctx, turnQuery, game.ID)
+		if err != nil {
+			return nil, fmt.Errorf("query turns for game %s: %w", game.ID, err)
+		}
+		defer turnRows.Close()
+
+		for turnRows.Next() {
+			var turnNo int
+			var isActive int
+			if err := turnRows.Scan(&turnNo, &isActive); err != nil {
+				return nil, err
+			}
+			games[i].Turns = append(games[i].Turns, GameTurn{
+				TurnNo:   turnNo,
+				IsActive: isActive == 1,
+			})
+		}
+		if err := turnRows.Err(); err != nil {
+			return nil, err
+		}
+	}
+
+	return games, nil
+}
+
 // AddReportFile inserts a report_files row and sets rf.ID.
 func (s *SQLiteStore) AddReportFile(rf *model.ReportFile) error {
 
@@ -1512,6 +1575,20 @@ func (s *SQLiteStore) isUserActive(ctx context.Context, handle string) (bool, er
 	return false, rows.Err()
 }
 
+// IsUserGM checks if a user has the "gm" role.
+func (s *SQLiteStore) IsUserGM(ctx context.Context, handle string) (bool, error) {
+	const query = `SELECT 1 FROM user_roles WHERE user_handle = ? AND role = 'gm' LIMIT 1`
+	var exists int
+	err := s.db.QueryRowContext(ctx, query, handle).Scan(&exists)
+	if err == sql.ErrNoRows {
+		return false, nil
+	}
+	if err != nil {
+		return false, fmt.Errorf("check gm role: %w", err)
+	}
+	return true, nil
+}
+
 func (s *SQLiteStore) getClanForUser(ctx context.Context, gameID, handle string) (int, error) {
 	const query = `SELECT clan_no FROM game_clans WHERE game_id = ? AND user_handle = ?`
 	var clanNo int
@@ -1528,6 +1605,20 @@ func (s *SQLiteStore) getClanForUser(ctx context.Context, gameID, handle string)
 // GetClanForUser returns the clan number for a user in a specific game (exported version).
 func (s *SQLiteStore) GetClanForUser(ctx context.Context, gameID, handle string) (int, error) {
 	return s.getClanForUser(ctx, gameID, handle)
+}
+
+// GetHandleForClan returns the user handle for a clan in a specific game.
+func (s *SQLiteStore) GetHandleForClan(ctx context.Context, gameID string, clanNo int) (string, error) {
+	const query = `SELECT user_handle FROM game_clans WHERE game_id = ? AND clan_no = ?`
+	var handle string
+	err := s.db.QueryRowContext(ctx, query, gameID, clanNo).Scan(&handle)
+	if err == sql.ErrNoRows {
+		return "", nil
+	}
+	if err != nil {
+		return "", fmt.Errorf("query handle: %w", err)
+	}
+	return handle, nil
 }
 
 // TurnsByGameClan returns distinct turn numbers filtered by game and clan.
@@ -1577,6 +1668,62 @@ type UserGame struct {
 	GameID      string
 	Description string
 	ClanNo      int
+}
+
+// QueryResult holds the result of a raw SQL query.
+type QueryResult struct {
+	Columns []string
+	Rows    [][]string
+	Error   string
+}
+
+// ExecRawQuery executes a raw SQL query and returns results as strings.
+// This is intended for admin/debugging use only.
+func (s *SQLiteStore) ExecRawQuery(ctx context.Context, query string) *QueryResult {
+	result := &QueryResult{}
+
+	rows, err := s.db.QueryContext(ctx, query)
+	if err != nil {
+		result.Error = err.Error()
+		return result
+	}
+	defer rows.Close()
+
+	cols, err := rows.Columns()
+	if err != nil {
+		result.Error = err.Error()
+		return result
+	}
+	result.Columns = cols
+
+	for rows.Next() {
+		values := make([]any, len(cols))
+		valuePtrs := make([]any, len(cols))
+		for i := range values {
+			valuePtrs[i] = &values[i]
+		}
+
+		if err := rows.Scan(valuePtrs...); err != nil {
+			result.Error = err.Error()
+			return result
+		}
+
+		row := make([]string, len(cols))
+		for i, v := range values {
+			if v == nil {
+				row[i] = "NULL"
+			} else {
+				row[i] = fmt.Sprintf("%v", v)
+			}
+		}
+		result.Rows = append(result.Rows, row)
+	}
+
+	if err := rows.Err(); err != nil {
+		result.Error = err.Error()
+	}
+
+	return result
 }
 
 // GetGamesForUser returns all games a user belongs to, sorted by game ID.
