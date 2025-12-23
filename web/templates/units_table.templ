@@ -9,7 +9,11 @@ import (
 )
 
 templ UnitsPage(units []*model.UnitX) {
-	@Layout("Units") {
+	@UnitsPageWithData(units, LayoutData{})
+}
+
+templ UnitsPageWithData(units []*model.UnitX, data LayoutData) {
+	@LayoutWithData("Units", data) {
 		<h1>Units</h1>
 		<div id="units-table-container">
 			@UnitsTable(units)
@@ -41,13 +45,17 @@ templ UnitsTable(units []*model.UnitX) {
 }
 
 templ UnitRow(u *model.UnitX) {
-	<tr>
+	<tr class="clickable-row" onclick={ goToUnit(u.ID) }>
 		<td>{ u.UnitID }</td>
 		<td>{ intToStr(u.TurnNo) }</td>
 		<td>{ string(u.StartTN) }</td>
 		<td>{ string(u.EndTN) }</td>
 		<td>{ intToStr(len(u.Acts)) }</td>
 	</tr>
+}
+
+script goToUnit(id int64) {
+	window.location.href = "/units/" + id;
 }
 
 func intToStr(n int) string {

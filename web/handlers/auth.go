@@ -3,11 +3,20 @@
 package handlers
 
 import (
+	"context"
 	"net/http"
 
+	"github.com/mdhender/tnrpt"
 	"github.com/mdhender/tnrpt/web/auth"
 	"github.com/mdhender/tnrpt/web/templates"
 )
+
+// withUsername adds the username to the request context.
+// Uses string key "username" to match template ctx.Value("username") checks.
+func withUsername(r *http.Request, username string) *http.Request {
+	ctx := context.WithValue(r.Context(), "username", username)
+	return r.WithContext(ctx)
+}
 
 func (h *Handlers) LoginPage(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
@@ -20,8 +29,9 @@ func (h *Handlers) LoginPage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	data := templates.LayoutData{Version: tnrpt.Version().String()}
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	if err := templates.LoginPage("").Render(r.Context(), w); err != nil {
+	if err := templates.LoginPage("", data).Render(r.Context(), w); err != nil {
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
 	}
 }
@@ -32,9 +42,11 @@ func (h *Handlers) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	data := templates.LayoutData{Version: tnrpt.Version().String()}
+
 	if err := r.ParseForm(); err != nil {
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
-		templates.LoginPage("Invalid form submission").Render(r.Context(), w)
+		templates.LoginPage("Invalid form submission", data).Render(r.Context(), w)
 		return
 	}
 
@@ -44,7 +56,7 @@ func (h *Handlers) Login(w http.ResponseWriter, r *http.Request) {
 	user, ok := auth.ValidateCredentials(username, password)
 	if !ok {
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
-		templates.LoginPage("Invalid username or password").Render(r.Context(), w)
+		templates.LoginPage("Invalid username or password", data).Render(r.Context(), w)
 		return
 	}
 
@@ -66,9 +78,15 @@ func (h *Handlers) RequireAuth(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		session := auth.GetSessionFromRequest(r, h.sessions)
 		if session == nil {
-			http.Redirect(w, r, "/login", http.StatusSeeOther)
-			return
+			if h.autoAuthUser != nil {
+				session = h.sessions.Create(*h.autoAuthUser)
+				auth.SetSessionCookie(w, session)
+			} else {
+				http.Redirect(w, r, "/login", http.StatusSeeOther)
+				return
+			}
 		}
+		r = withUsername(r, session.User.Username)
 		next(w, r)
 	}
 }

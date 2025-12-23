@@ -1,0 +1,50 @@
+# .air.toml - Live reload configuration for development
+# Install air: go install github.com/air-verse/air@latest
+# Run: air
+
+root = "."
+tmp_dir = "tmp"
+
+[build]
+  # Pre-build command: generate templ files
+  pre_cmd = ["templ generate ./web/templates/"]
+  # Build command
+  cmd = "go build -o ./tmp/main ./cmd/server"
+  # Binary to run
+  bin = "./tmp/main"
+  # Arguments to pass to the binary
+  args_bin = ["--addr", ":9797", "--auth-as", "clan0506"]
+  # Watch these extensions
+  include_ext = ["go", "templ", "css"]
+  # Exclude these directories
+  exclude_dir = ["tmp", "vendor", ".git", ".idea", "testdata"]
+  # Exclude files matching these patterns
+  exclude_file = []
+  # Exclude unchanged files
+  exclude_unchanged = false
+  # Follow symlinks
+  follow_symlink = false
+  # Delay before rebuilding (ms)
+  delay = 500
+  # Stop old binary before building
+  stop_on_error = true
+  # Send interrupt signal before killing
+  send_interrupt = true
+  # Delay before killing after interrupt (ms)
+  kill_delay = 500
+
+[log]
+  # Show log time
+  time = false
+  # Only show main log
+  main_only = false
+
+[color]
+  main = "magenta"
+  watcher = "cyan"
+  build = "yellow"
+  runner = "green"
+
+[misc]
+  # Delete tmp directory on exit
+  clean_on_exit = true

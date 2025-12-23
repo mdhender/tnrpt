@@ -22,7 +22,7 @@ func New() *MemoryStore {
 }
 
 // AddReport adds a parsed report to the store.
-func (s *MemoryStore) AddReport(rx *model.ReportX) {
+func (s *MemoryStore) AddReport(rx *model.ReportX) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
@@ -34,6 +34,7 @@ func (s *MemoryStore) AddReport(rx *model.ReportX) {
 		ux.ReportXID = rx.ID
 		s.units = append(s.units, ux)
 	}
+	return nil
 }
 
 // Reports returns all reports in the store.

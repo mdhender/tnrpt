@@ -1,0 +1,59 @@
+// Copyright (c) 2025 Michael D Henderson. All rights reserved.
+
+package templates
+
+import (
+	"strconv"
+
+	"github.com/mdhender/tnrpt/web/store"
+)
+
+templ TerrainPage(observations []store.TerrainObs) {
+	@TerrainPageWithData(observations, LayoutData{})
+}
+
+templ TerrainPageWithData(observations []store.TerrainObs, data LayoutData) {
+	@LayoutWithData("Terrain", data) {
+		<h1>Terrain Observations</h1>
+		<div id="terrain-table-container">
+			@TerrainTable(observations)
+		</div>
+	}
+}
+
+templ TerrainTable(observations []store.TerrainObs) {
+	if len(observations) == 0 {
+		<p>No terrain observations found.</p>
+	} else {
+		<table>
+			<thead>
+				<tr>
+					<th>Terrain</th>
+					<th>Unit ID</th>
+					<th>Turn</th>
+					<th>Special</th>
+					<th>Label</th>
+				</tr>
+			</thead>
+			<tbody>
+				for _, t := range observations {
+					@TerrainRow(t)
+				}
+			</tbody>
+		</table>
+	}
+}
+
+templ TerrainRow(t store.TerrainObs) {
+	<tr>
+		<td>{ t.Terrain }</td>
+		<td>{ t.UnitID }</td>
+		<td>{ strconv.Itoa(t.TurnNo) }</td>
+		<td>
+			if t.Special {
+				✓
+			}
+		</td>
+		<td>{ t.Label }</td>
+	</tr>
+}

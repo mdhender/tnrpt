@@ -8,7 +8,35 @@ import (
 	"github.com/mdhender/tnrpt/web/store"
 )
 
+type LayoutData struct {
+	CurrentPath    string
+	Turns          []int
+	SelectedTurn   int
+	Version        string
+	HideTurnSelect bool
+}
+
+func (d LayoutData) LinkWithTurn(path string) string {
+	if d.SelectedTurn > 0 {
+		return path + "?turn=" + strconv.Itoa(d.SelectedTurn)
+	}
+	return path
+}
+
+script redirectWithTurn(path string) {
+	var turn = document.getElementById('turn-select').value;
+	if (turn) {
+		window.location.href = path + '?turn=' + turn;
+	} else {
+		window.location.href = path;
+	}
+}
+
 templ Layout(title string) {
+	@LayoutWithData(title, LayoutData{})
+}
+
+templ LayoutWithData(title string, data LayoutData) {
 	<!DOCTYPE html>
 	<html lang="en">
 		<head>
@@ -20,28 +48,62 @@ templ Layout(title string) {
 		</head>
 		<body>
 			<header>
-				<nav>
+				<div class="header-brand">
 					<a href="/">TribeNet Reports</a>
-					if ctx.Value("username") != nil {
-						<span class="user-info">
-							{ ctx.Value("username").(string) }
-							<a href="/logout">Logout</a>
-						</span>
-					}
-				</nav>
+				</div>
+				if ctx.Value("username") != nil {
+					<div class="user-info">
+						{ ctx.Value("username").(string) }
+						<a href="/logout">Logout</a>
+					</div>
+				}
 			</header>
-			<main>
-				{ children... }
-			</main>
+			<div class="app-container">
+				if ctx.Value("username") != nil {
+					<aside class="sidebar">
+						<nav class="sidebar-nav">
+							<h3>Navigation</h3>
+							<ul>
+								<li><a href={ templ.SafeURL(data.LinkWithTurn("/units")) }>Units</a></li>
+								<li><a href={ templ.SafeURL(data.LinkWithTurn("/movements")) }>Movements</a></li>
+								<li><a href={ templ.SafeURL(data.LinkWithTurn("/terrain")) }>Terrain</a></li>
+								<li><a href={ templ.SafeURL(data.LinkWithTurn("/resources")) }>Resources</a></li>
+							</ul>
+						</nav>
+						if len(data.Turns) > 0 && !data.HideTurnSelect {
+							<div class="turn-selector">
+								<h3>Turn</h3>
+								<select
+									id="turn-select"
+									name="turn"
+									onchange={ redirectWithTurn(data.CurrentPath) }
+								>
+									<option value="">All Turns</option>
+									for _, t := range data.Turns {
+										if t == data.SelectedTurn {
+											<option value={ strconv.Itoa(t) } selected>Turn { strconv.Itoa(t) }</option>
+										} else {
+											<option value={ strconv.Itoa(t) }>Turn { strconv.Itoa(t) }</option>
+										}
+									}
+								</select>
+							</div>
+						}
+					</aside>
+				}
+				<main id="main-content">
+					{ children... }
+				</main>
+			</div>
 			<footer>
-				<p>&copy; 2025 TribeNet Reports</p>
+				<p>&copy; 2025 TribeNet Reports | { data.Version }</p>
 			</footer>
 		</body>
 	</html>
 }
 
-templ Index(stats store.Stats) {
-	@Layout("Home") {
+templ Index(stats store.Stats, data LayoutData) {
+	@LayoutWithData("Home", data) {
 		<h1>Welcome to TribeNet Reports</h1>
 		<p>Select a turn report to view.</p>
 		<section class="stats">

@@ -18,7 +18,7 @@ func BistreToModel(source string, pt *azul.Turn_t) (*model.ReportFile, *model.Re
 	turnNo := 100*pt.Year + pt.Month
 
 	rf := &model.ReportFile{
-		ID:        0, // caller assigns
+		ID:        0,  // caller assigns
 		Game:      "", // caller assigns
 		ClanNo:    "", // caller assigns
 		TurnNo:    turnNo,

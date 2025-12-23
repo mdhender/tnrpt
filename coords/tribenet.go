@@ -2,7 +2,6 @@
 
 package coords
 
-
 //// 9.0 Other Systems
 //
 //// 9.1 Compass Points
@@ -113,4 +112,3 @@ package coords
 //	}
 //	return Hex{q: q, r: r, s: -q - r}
 //}
-

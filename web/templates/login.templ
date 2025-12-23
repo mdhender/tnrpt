@@ -2,8 +2,8 @@
 
 package templates
 
-templ LoginPage(errorMsg string) {
-	@Layout("Login") {
+templ LoginPage(errorMsg string, data LayoutData) {
+	@LayoutWithData("Login", data) {
 		<div class="login-container">
 			<h1>Login</h1>
 			if errorMsg != "" {

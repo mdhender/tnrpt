@@ -1,0 +1,55 @@
+// Copyright (c) 2025 Michael D Henderson. All rights reserved.
+
+package templates
+
+import (
+	"strconv"
+
+	"github.com/mdhender/tnrpt/web/store"
+)
+
+templ ResourcesPage(resources []store.Resource) {
+	@ResourcesPageWithData(resources, LayoutData{})
+}
+
+templ ResourcesPageWithData(resources []store.Resource, data LayoutData) {
+	@LayoutWithData("Resources", data) {
+		<h1>Resources</h1>
+		<div id="resources-table-container">
+			@ResourcesTable(resources)
+		</div>
+	}
+}
+
+templ ResourcesTable(resources []store.Resource) {
+	if len(resources) == 0 {
+		<p>No resources found.</p>
+	} else {
+		<table>
+			<thead>
+				<tr>
+					<th>Kind</th>
+					<th>Quantity</th>
+					<th>Unit ID</th>
+					<th>Turn</th>
+					<th>Terrain</th>
+				</tr>
+			</thead>
+			<tbody>
+				for _, r := range resources {
+					@ResourceRow(r)
+				}
+			</tbody>
+		</table>
+	}
+}
+
+templ ResourceRow(r store.Resource) {
+	<tr>
+		<td>{ r.Kind }</td>
+		<td>{ strconv.Itoa(r.Qty) }</td>
+		<td>{ r.UnitID }</td>
+		<td>{ strconv.Itoa(r.TurnNo) }</td>
+		<td>{ r.Terrain }</td>
+	</tr>
+}

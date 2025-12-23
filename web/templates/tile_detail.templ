@@ -1,0 +1,65 @@
+// Copyright (c) 2025 Michael D Henderson. All rights reserved.
+
+package templates
+
+import (
+	"fmt"
+
+	"github.com/mdhender/tnrpt/web/store"
+)
+
+templ TileDetailPage(tile *store.TileDetail, data LayoutData) {
+	@LayoutWithData("Tile " + tile.Coord, data) {
+		<div class="tile-detail">
+			<h1>Tile { tile.Coord }</h1>
+			<p><a href="/terrain">← Back to Terrain</a></p>
+			
+			<div class="tile-summary">
+				<dl>
+					<dt>Grid</dt>
+					<dd>{ tile.Grid }</dd>
+					<dt>Column</dt>
+					<dd>{ fmt.Sprintf("%02d", tile.Col) }</dd>
+					<dt>Row</dt>
+					<dd>{ fmt.Sprintf("%02d", tile.Row) }</dd>
+				</dl>
+			</div>
+
+			<h2>Sightings ({ fmt.Sprintf("%d", len(tile.Sightings)) })</h2>
+			if len(tile.Sightings) == 0 {
+				<p>No sightings recorded for this location.</p>
+			} else {
+				<table>
+					<thead>
+						<tr>
+							<th>Unit</th>
+							<th>Turn</th>
+							<th>Terrain</th>
+							<th>Special</th>
+							<th>Label</th>
+						</tr>
+					</thead>
+					<tbody>
+						for _, s := range tile.Sightings {
+							<tr>
+								<td>
+									<a href={ templ.SafeURL("/units?unit=" + s.UnitID) }>
+										{ s.UnitID }
+									</a>
+								</td>
+								<td>{ fmt.Sprintf("%d", s.TurnNo) }</td>
+								<td>{ s.Terrain }</td>
+								<td>
+									if s.Special {
+										<span class="special-marker">★</span>
+									}
+								</td>
+								<td>{ s.Label }</td>
+							</tr>
+						}
+					</tbody>
+				</table>
+			}
+		</div>
+	}
+}

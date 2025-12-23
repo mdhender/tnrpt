@@ -41,7 +41,7 @@ type UnitX struct {
 	StartTN TNCoord `json:"startTN" db:"-"` // e.g., "QQ 0205"
 	EndTN   TNCoord `json:"endTN"   db:"-"` // e.g., "QQ 0205"
 
-	Acts []*Act  `json:"acts,omitempty"`        // ordered list for JSON export/import
+	Acts []*Act  `json:"acts,omitempty"`       // ordered list for JSON export/import
 	Src  *SrcRef `json:"src,omitempty" db:"-"` // provenance (optional but recommended)
 }
 
@@ -91,8 +91,8 @@ type Act struct {
 	UnitXID int64   `json:"unitXId"        db:"unit_x_id"`
 	Seq     int     `json:"seq"            db:"seq"`  // ordering within unit section (1-based)
 	Kind    ActKind `json:"kind"           db:"kind"` // follow|goto|move|scout|status
-	Ok      bool   `json:"ok,omitempty"   db:"ok"`   // coarse result at action level
-	Note    string `json:"note,omitempty" db:"note"`
+	Ok      bool    `json:"ok,omitempty"   db:"ok"`   // coarse result at action level
+	Note    string  `json:"note,omitempty" db:"note"`
 
 	// follow
 	TargetUnitID string `json:"targetUnitId,omitempty" db:"target_unit_id"`

@@ -29,6 +29,7 @@ func main() {
 	staticDir := flag.String("static", "web/static", "static files directory")
 	timeout := flag.Duration("timeout", 0, "auto-shutdown after duration (e.g., 5s, 1m)")
 	showVersion := flag.Bool("version", false, "show version and exit")
+	authAs := flag.String("auth-as", "", "auto-authenticate as clan (e.g., clan0500) for testing")
 	flag.Parse()
 
 	if *showVersion {
@@ -48,17 +49,27 @@ func main() {
 	}
 	log.SetFlags(logFlags)
 
-	memStore := store.New()
-	if err := store.LoadFromDir(memStore, *dataDir); err != nil {
+	sqliteStore, err := store.NewSQLiteStore()
+	if err != nil {
+		log.Fatalf("failed to create SQLite store: %v", err)
+	}
+	defer sqliteStore.Close()
+
+	if err := store.LoadFromDir(sqliteStore, *dataDir); err != nil {
 		log.Printf("warning: failed to load data: %v", err)
 	}
 
-	stats := memStore.Stats()
+	stats := sqliteStore.Stats()
 	log.Printf("store: %d reports, %d units, %d acts, %d steps",
 		stats.Reports, stats.Units, stats.Acts, stats.Steps)
 
 	sessions := auth.NewSessionStore()
-	h := handlers.New(memStore, sessions)
+	h := handlers.New(sqliteStore, sessions)
+
+	if *authAs != "" {
+		h.SetAutoAuth(*authAs)
+		log.Printf("auth: auto-authenticating as %s", *authAs)
+	}
 
 	mux := http.NewServeMux()
 
@@ -75,6 +86,11 @@ func main() {
 	})
 	mux.HandleFunc("/logout", h.Logout)
 	mux.HandleFunc("/units", h.RequireAuth(h.Units))
+	mux.HandleFunc("/units/{id}", h.RequireAuth(h.UnitDetail))
+	mux.HandleFunc("/movements", h.RequireAuth(h.Movements))
+	mux.HandleFunc("/terrain", h.RequireAuth(h.Terrain))
+	mux.HandleFunc("/tiles/{grid}/{col}/{row}", h.RequireAuth(h.TileDetail))
+	mux.HandleFunc("/resources", h.RequireAuth(h.Resources))
 
 	server := &http.Server{
 		Addr:         *addr,
