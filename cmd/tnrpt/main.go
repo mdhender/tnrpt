@@ -6,11 +6,15 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
+	"net/http"
 	"os"
+	"os/signal"
 	"path/filepath"
 	"sort"
+	"syscall"
 	"time"
 
 	"github.com/mdhender/tnrpt"
@@ -21,6 +25,9 @@ import (
 	"github.com/mdhender/tnrpt/pipelines/parsers/docx"
 	"github.com/mdhender/tnrpt/pipelines/parsers/report"
 	"github.com/mdhender/tnrpt/walkers/anhinga"
+	"github.com/mdhender/tnrpt/web/auth"
+	"github.com/mdhender/tnrpt/web/handlers"
+	webstore "github.com/mdhender/tnrpt/web/store"
 	"github.com/spf13/cobra"
 )
 
@@ -146,6 +153,10 @@ func cmdPipeline() *cobra.Command {
 	showText := false
 	showTiming := false
 	trimLeading, trimTrailing := true, true
+	var serve bool
+	var serveNoAuth bool
+	var serveAddr string
+	var staticDir string
 	addFlags := func(cmd *cobra.Command) error {
 		cmd.Flags().StringVar(&docxFile, "docx", docxFile, "import docx file")
 		cmd.Flags().StringVar(&textFile, "text", textFile, "import text file")
@@ -160,6 +171,10 @@ func cmdPipeline() *cobra.Command {
 		cmd.Flags().BoolVar(&showTiming, "show-timing", showText, "show timing for each stage")
 		cmd.Flags().BoolVar(&trimLeading, "trim-leading-spaces", trimLeading, "trim leading spaces on import")
 		cmd.Flags().BoolVar(&trimLeading, "trim-trailing-spaces", trimTrailing, "trim trailing spaces on import")
+		cmd.Flags().BoolVar(&serve, "serve", false, "start HTTP server after parsing")
+		cmd.Flags().BoolVar(&serveNoAuth, "serve-no-auth", false, "start HTTP server without authentication")
+		cmd.Flags().StringVar(&serveAddr, "serve-addr", ":8787", "HTTP server listen address")
+		cmd.Flags().StringVar(&staticDir, "static", "web/static", "static files directory")
 		return nil
 	}
 	var cmd = &cobra.Command{
@@ -324,6 +339,75 @@ func cmdPipeline() *cobra.Command {
 			if showTiming {
 				log.Printf("%s: pipeline    completed in %v\n", rpt.Name, time.Since(startedPipeline))
 			}
+
+			if serve || serveNoAuth {
+				rx, err := adapters.BistreTurnToModelReportX(rpt.Name, turn, game, clanNo)
+				if err != nil {
+					return fmt.Errorf("adapt to model: %w", err)
+				}
+
+				memStore := webstore.New()
+				memStore.AddReport(rx)
+
+				stats := memStore.Stats()
+				log.Printf("store: %d reports, %d units, %d acts, %d steps",
+					stats.Reports, stats.Units, stats.Acts, stats.Steps)
+
+				sessions := auth.NewSessionStore()
+				h := handlers.New(memStore, sessions)
+
+				mux := http.NewServeMux()
+				fs := http.FileServer(http.Dir(staticDir))
+				mux.Handle("/static/", http.StripPrefix("/static/", fs))
+				mux.HandleFunc("/", h.Index)
+
+				if serveNoAuth {
+					mux.HandleFunc("/units", h.UnitsNoAuth)
+				} else {
+					mux.HandleFunc("/login", func(w http.ResponseWriter, r *http.Request) {
+						if r.Method == http.MethodPost {
+							h.Login(w, r)
+						} else {
+							h.LoginPage(w, r)
+						}
+					})
+					mux.HandleFunc("/logout", h.Logout)
+					mux.HandleFunc("/units", h.RequireAuth(h.Units))
+				}
+
+				server := &http.Server{
+					Addr:         serveAddr,
+					Handler:      mux,
+					ReadTimeout:  15 * time.Second,
+					WriteTimeout: 15 * time.Second,
+					IdleTimeout:  60 * time.Second,
+				}
+
+				shutdown := make(chan os.Signal, 1)
+				signal.Notify(shutdown, os.Interrupt, syscall.SIGTERM)
+
+				go func() {
+					log.Printf("server: listening on %s", serveAddr)
+					if serveNoAuth {
+						log.Printf("server: authentication disabled (--serve-no-auth)")
+					}
+					if err := server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+						log.Fatalf("server: %v", err)
+					}
+				}()
+
+				<-shutdown
+				log.Printf("server: shutting down gracefully")
+
+				shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+				defer cancel()
+
+				if err := server.Shutdown(shutdownCtx); err != nil {
+					return fmt.Errorf("server shutdown: %w", err)
+				}
+				log.Printf("server: stopped")
+			}
+
 			return nil
 		},
 	}
