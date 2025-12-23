@@ -4,23 +4,33 @@ package store
 
 import (
 	"bytes"
+	"crypto/sha256"
+	"encoding/hex"
 	"fmt"
 	"log"
 	"os"
 	"path/filepath"
 	"regexp"
 	"strings"
+	"time"
 
 	"github.com/mdhender/tnrpt/adapters"
+	"github.com/mdhender/tnrpt/model"
 	"github.com/mdhender/tnrpt/pipelines/parsers/bistre"
 	"github.com/mdhender/tnrpt/pipelines/parsers/docx"
 	"github.com/mdhender/tnrpt/pipelines/parsers/report"
 )
 
+// Store is an interface for loading data.
+type Store interface {
+	AddReportFile(rf *model.ReportFile) error
+	AddReport(rx *model.ReportX) error
+}
+
 // LoadFromDir loads all .docx files from a directory into the store.
 // File names are expected to follow the pattern: GGGG.YYYY-MM.CCCC.docx
 // where GGGG is game, YYYY-MM is turn, CCCC is clan.
-func LoadFromDir(s *MemoryStore, dir string) error {
+func LoadFromDir(s Store, dir string) error {
 	entries, err := os.ReadDir(dir)
 	if err != nil {
 		return fmt.Errorf("read dir: %w", err)
@@ -50,9 +60,15 @@ func LoadFromDir(s *MemoryStore, dir string) error {
 }
 
 // LoadFile loads a single .docx file into the store.
-func LoadFile(s *MemoryStore, path string) error {
+func LoadFile(s Store, path string) error {
 	name := filepath.Base(path)
 	game, clanNo := parseFilename(name)
+
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return fmt.Errorf("read file: %w", err)
+	}
+	hash := sha256.Sum256(data)
 
 	doc, err := docx.ParsePath(path, true, true, true, false, false)
 	if err != nil {
@@ -78,12 +94,30 @@ func LoadFile(s *MemoryStore, path string) error {
 		return fmt.Errorf("parser returned nil")
 	}
 
+	turnNo := 100*turn.Year + turn.Month
+	rf := &model.ReportFile{
+		Game:      game,
+		ClanNo:    clanNo,
+		TurnNo:    turnNo,
+		Name:      name,
+		SHA256:    hex.EncodeToString(hash[:]),
+		Mime:      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+		CreatedAt: time.Now().UTC(),
+	}
+	if err := s.AddReportFile(rf); err != nil {
+		return fmt.Errorf("add report file: %w", err)
+	}
+
 	rx, err := adapters.BistreTurnToModelReportX(name, turn, game, clanNo)
 	if err != nil {
 		return fmt.Errorf("adapt to model: %w", err)
 	}
+	rx.ReportFileID = rf.ID
 
-	s.AddReport(rx)
+	err = s.AddReport(rx)
+	if err != nil {
+		return err
+	}
 	return nil
 }
 

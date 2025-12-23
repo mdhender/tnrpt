@@ -18,21 +18,87 @@ header {
     background: #1a1a2e;
     color: white;
     padding: 1rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 
-header nav a {
+.header-brand a {
     color: white;
     text-decoration: none;
     font-weight: bold;
     font-size: 1.25rem;
 }
 
+.app-container {
+    display: flex;
+    flex: 1;
+    min-height: 0;
+}
+
+.sidebar {
+    width: 220px;
+    background: #f5f5f5;
+    border-right: 1px solid #ddd;
+    padding: 1rem;
+    flex-shrink: 0;
+}
+
+.sidebar-nav h3,
+.turn-selector h3 {
+    margin: 0 0 0.75rem 0;
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    color: #666;
+    letter-spacing: 0.05em;
+}
+
+.sidebar-nav ul {
+    list-style: none;
+    margin: 0 0 1.5rem 0;
+    padding: 0;
+}
+
+.sidebar-nav li {
+    margin-bottom: 0.25rem;
+}
+
+.sidebar-nav a {
+    display: block;
+    padding: 0.5rem 0.75rem;
+    color: #1a1a2e;
+    text-decoration: none;
+    border-radius: 4px;
+}
+
+.sidebar-nav a:hover {
+    background: #e8e8e8;
+}
+
+.sidebar-nav a.active {
+    background: #1a1a2e;
+    color: white;
+}
+
+.turn-selector select {
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    background: white;
+}
+
+.turn-selector select:focus {
+    outline: none;
+    border-color: #1a1a2e;
+}
+
 main {
     flex: 1;
     padding: 2rem;
-    max-width: 1200px;
-    margin: 0 auto;
-    width: 100%;
+    max-width: 1000px;
+    overflow-y: auto;
 }
 
 footer {
@@ -137,4 +203,75 @@ button[type="submit"]:hover {
 
 .user-info a {
     margin-left: 1rem;
+}
+
+/* Clickable table rows */
+.clickable-row {
+    cursor: pointer;
+}
+
+.clickable-row:hover {
+    background: #e8f4f8;
+}
+
+/* Detail pages */
+.unit-detail, .tile-detail {
+    max-width: 900px;
+}
+
+.unit-summary, .tile-summary {
+    background: #f9f9f9;
+    padding: 1rem;
+    border-radius: 4px;
+    margin-bottom: 1.5rem;
+}
+
+.unit-summary dl, .tile-summary dl {
+    display: grid;
+    grid-template-columns: max-content 1fr;
+    gap: 0.5rem 1rem;
+    margin: 0;
+}
+
+.unit-summary dt, .tile-summary dt {
+    font-weight: 600;
+    color: #666;
+}
+
+.act-section {
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+}
+
+.act-section h3 {
+    margin-top: 0;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid #eee;
+}
+
+.steps-table {
+    font-size: 0.9rem;
+}
+
+.status-ok {
+    color: #28a745;
+    font-weight: bold;
+}
+
+.status-fail {
+    color: #dc3545;
+    font-weight: bold;
+}
+
+.special-marker {
+    color: #ffc107;
+    margin-left: 0.25rem;
+}
+
+.label {
+    color: #666;
+    font-size: 0.9em;
+    margin-left: 0.25rem;
 }

@@ -8,73 +8,29 @@ Stages
 * [ ] Stage to walk parsed section into unit/tile observations
 * [ ] Stage to render unit/tile observations into Worldographer maps
 
-## Sprint 13 — Spike: Validate Templ + HTMX + In-Memory Store
-
-**Goal**: Prove out the stack with a minimal working app that displays parsed turn report data. App starts at end of pipeline for data exploration.
-
-**Decisions made**:
-- Framework: HTMX + Templ (typed components solve maintainability concerns)
-- Data store: SQLite (existing `model/store.go`), in-memory for spike
-- Auth: Session-based with bcrypt (future sprint)
-- Pocketbase: Not needed at this scale
-
-### Sprint 13 Tasks
-
-#### 13.1 — Templ Setup
-* [x] Add Templ to project (`go install github.com/a-h/templ/cmd/templ@latest`)
-* [x] Create `web/` directory structure: `web/templates/`, `web/static/`, `web/handlers/`
-* [x] Create base layout component (`web/templates/layout.templ`)
-* [x] Verify Templ generates and compiles
-
-#### 13.2 — Minimal HTTP Server
-* [x] Create `cmd/server/` with basic Chi or stdlib router
-* [x] Serve static files (HTMX, minimal CSS)
-* [x] Create index handler that renders layout
-* [x] Verify server starts and serves HTML
-
-#### 13.3 — In-Memory Store Integration
-* [x] Create in-memory store adapter (wraps existing model types)
-* [x] Load parsed turn report data into store at startup
-* [x] Expose store to handlers via dependency injection
-
-#### 13.4 — First Data Table
-* [x] Create Templ component for units table (`web/templates/units_table.templ`)
-* [x] Create handler that queries store and renders component
-* [x] Add HTMX to load table without full page reload
-* [x] Verify data displays correctly
-
-#### 13.5 — Spike Auth (Hardcoded)
-* [x] Simple login page component
-* [x] Hardcoded users: username `clan0500`, password `clan-0500` pattern
-* [x] Session cookie (no bcrypt for spike, just string match)
-* [x] Filter data by logged-in clan
-
-#### 13.6 — Pipeline Integration
-* [x] Add `--serve` and `--serve-no-auth` flags to pipeline CLI
-* [x] After parsing, start HTTP server with loaded data
-* [x] Document spike findings and decide go/no-go
-
 ---
 
 ## Sprint 14 — Core Data Tables (Read-Only)
 
-**Goal**: Full read-only views of all major data types.
+**Goal**: Full read-only views of all major data types in an in-memory SQLite database.
 
 ### Sprint 14 Tasks
 
-#### 14.1 — Table Components
-* [ ] Units table with sorting
-* [ ] Tiles/terrain table
-* [ ] Movement history table
-* [ ] Resources/items table
+#### 14.1 — Schema and Table Components
+* [x] Create in-memory SQLite database instance with foreign key pragma
+* [x] Load schema on startup
+* [x] Units table with sorting
+* [x] Tiles/terrain table
+* [x] Movement history table
+* [x] Resources/items table
 
 #### 14.2 — Detail Views
-* [ ] Unit detail page (click row → see full unit data)
-* [ ] Tile detail page
+* [x] Unit detail page (click row → see full unit data)
+* [x] Tile detail page
 
 #### 14.3 — Navigation
-* [ ] Sidebar navigation component
-* [ ] Turn selector (switch between loaded turns)
+* [x] Sidebar navigation component
+* [x] Turn selector (switch between loaded turns)
 
 ---
 
@@ -85,18 +41,19 @@ Stages
 ### Sprint 15 Tasks
 
 #### 15.1 — Auth Foundation
-* [ ] Add users table to schema (id, username, password_hash, clan_id)
+* [x] Add users table to schema (id, username, password_hash, clan_id)
 * [ ] bcrypt password hashing utilities
-* [ ] Session middleware (cookie-based)
+* [x] Session middleware (cookie-based)
 
 #### 15.2 — Login Flow
-* [ ] Login page component
-* [ ] Login handler (validate credentials, create session)
-* [ ] Logout handler
-* [ ] Protect routes middleware
+* [x] Login page component
+* [x] Login handler (validate credentials, create session)
+* [x] Logout handler
+* [x] Protect routes middleware
 
 #### 15.3 — Data Isolation
-* [ ] Filter all queries by authenticated user's clan_id
+* [x] Filter all queries by authenticated user's clan_id
+* [x] Add clan_id column to unit_extracts for indexed filtering
 * [ ] Verify user A cannot see user B's data
 
 #### 15.4 — SQLite Persistence

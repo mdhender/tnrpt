@@ -5,7 +5,7 @@ package handlers
 import (
 	"net/http"
 
-	"github.com/mdhender/tnrpt/web/templates"
+	"github.com/mdhender/tnrpt/web/auth"
 )
 
 func (h *Handlers) Index(w http.ResponseWriter, r *http.Request) {
@@ -18,10 +18,16 @@ func (h *Handlers) Index(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	stats := h.store.Stats()
-
-	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	if err := templates.Index(stats).Render(r.Context(), w); err != nil {
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
+	session := auth.GetSessionFromRequest(r, h.sessions)
+	if session == nil && h.autoAuthUser != nil {
+		session = h.sessions.Create(*h.autoAuthUser)
+		auth.SetSessionCookie(w, session)
 	}
+
+	if session != nil {
+		http.Redirect(w, r, "/units", http.StatusSeeOther)
+		return
+	}
+
+	http.Redirect(w, r, "/login", http.StatusSeeOther)
 }

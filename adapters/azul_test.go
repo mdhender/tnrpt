@@ -23,18 +23,18 @@ func TestAzulParserTurnToModel(t *testing.T) {
 	}
 
 	pt, err := azul.ParseInput(
-		inputPath,                // fid
-		"",                       // tid (will be parsed from input)
-		input,                    // input
-		false,                    // acceptLoneDash
-		false,                    // debugParser
-		false,                    // debugSections
-		false,                    // debugSteps
-		false,                    // debugNodes
-		false,                    // debugFleetMovement
-		false,                    // experimentalUnitSplit
-		false,                    // experimentalScoutStill
-		azul.ParseConfig{},       // cfg
+		inputPath,          // fid
+		"",                 // tid (will be parsed from input)
+		input,              // input
+		false,              // acceptLoneDash
+		false,              // debugParser
+		false,              // debugSections
+		false,              // debugSteps
+		false,              // debugNodes
+		false,              // debugFleetMovement
+		false,              // experimentalUnitSplit
+		false,              // experimentalScoutStill
+		azul.ParseConfig{}, // cfg
 	)
 	if err != nil {
 		t.Fatalf("parse: %v", err)

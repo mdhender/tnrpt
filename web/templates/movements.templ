@@ -1,0 +1,67 @@
+// Copyright (c) 2025 Michael D Henderson. All rights reserved.
+
+package templates
+
+import (
+	"strconv"
+
+	"github.com/mdhender/tnrpt/web/store"
+)
+
+templ MovementsPage(movements []store.Movement) {
+	@MovementsPageWithData(movements, LayoutData{})
+}
+
+templ MovementsPageWithData(movements []store.Movement, data LayoutData) {
+	@LayoutWithData("Movements", data) {
+		<h1>Movement History</h1>
+		<div id="movements-table-container">
+			@MovementsTable(movements)
+		</div>
+	}
+}
+
+templ MovementsTable(movements []store.Movement) {
+	if len(movements) == 0 {
+		<p>No movements found.</p>
+	} else {
+		<table>
+			<thead>
+				<tr>
+					<th>Unit ID</th>
+					<th>Turn</th>
+					<th>Act</th>
+					<th>Step</th>
+					<th>Direction</th>
+					<th>OK</th>
+					<th>Terrain</th>
+					<th>Fail Reason</th>
+				</tr>
+			</thead>
+			<tbody>
+				for _, m := range movements {
+					@MovementRow(m)
+				}
+			</tbody>
+		</table>
+	}
+}
+
+templ MovementRow(m store.Movement) {
+	<tr>
+		<td>{ m.UnitID }</td>
+		<td>{ strconv.Itoa(m.TurnNo) }</td>
+		<td>{ strconv.Itoa(m.ActSeq) }</td>
+		<td>{ strconv.Itoa(m.StepSeq) }</td>
+		<td>{ m.Dir }</td>
+		<td>
+			if m.Ok {
+				✓
+			} else {
+				✗
+			}
+		</td>
+		<td>{ m.Terr }</td>
+		<td>{ m.FailWhy }</td>
+	</tr>
+}

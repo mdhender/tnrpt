@@ -1,0 +1,109 @@
+// Copyright (c) 2025 Michael D Henderson. All rights reserved.
+
+package templates
+
+import (
+	"fmt"
+
+	"github.com/mdhender/tnrpt/model"
+)
+
+templ UnitDetailPage(u *model.UnitX, data LayoutData) {
+	@LayoutWithData("Unit " + u.UnitID, data) {
+		<div class="unit-detail">
+			<h1>Unit { u.UnitID }</h1>
+			<p><a href="/units">← Back to Units</a></p>
+			
+			<div class="unit-summary">
+				<dl>
+					<dt>Turn</dt>
+					<dd>{ fmt.Sprintf("%d", u.TurnNo) }</dd>
+					<dt>Start</dt>
+					<dd>{ string(u.StartTN) }</dd>
+					<dt>End</dt>
+					<dd>{ string(u.EndTN) }</dd>
+				</dl>
+			</div>
+
+			<h2>Actions ({ fmt.Sprintf("%d", len(u.Acts)) })</h2>
+			if len(u.Acts) == 0 {
+				<p>No actions recorded.</p>
+			} else {
+				for _, act := range u.Acts {
+					@ActSection(act)
+				}
+			}
+		</div>
+	}
+}
+
+templ ActSection(act *model.Act) {
+	<div class="act-section">
+		<h3>
+			Act { fmt.Sprintf("%d", act.Seq) }: { string(act.Kind) }
+			if act.Ok {
+				<span class="status-ok">✓</span>
+			} else {
+				<span class="status-fail">✗</span>
+			}
+		</h3>
+		
+		if act.TargetUnitID != "" {
+			<p><strong>Target:</strong> { act.TargetUnitID }</p>
+		}
+		if string(act.DestTN) != "" {
+			<p><strong>Destination:</strong> { string(act.DestTN) }</p>
+		}
+		if act.Note != "" {
+			<p><strong>Note:</strong> { act.Note }</p>
+		}
+
+		if len(act.Steps) > 0 {
+			<table class="steps-table">
+				<thead>
+					<tr>
+						<th>#</th>
+						<th>Kind</th>
+						<th>Dir</th>
+						<th>Terrain</th>
+						<th>Status</th>
+						<th>Details</th>
+					</tr>
+				</thead>
+				<tbody>
+					for _, step := range act.Steps {
+						@StepRow(step)
+					}
+				</tbody>
+			</table>
+		}
+	</div>
+}
+
+templ StepRow(step *model.Step) {
+	<tr>
+		<td>{ fmt.Sprintf("%d", step.Seq) }</td>
+		<td>{ string(step.Kind) }</td>
+		<td>{ step.Dir }</td>
+		<td>
+			{ step.Terr }
+			if step.Special {
+				<span class="special-marker">★</span>
+			}
+			if step.Label != "" {
+				<span class="label">({ step.Label })</span>
+			}
+		</td>
+		<td>
+			if step.Ok {
+				<span class="status-ok">✓</span>
+			} else {
+				<span class="status-fail">✗</span>
+				if step.FailWhy != "" {
+					({ step.FailWhy })
+				}
+			}
+		</td>
+		<td>{ step.Note }</td>
+	</tr>
+}

@@ -346,15 +346,22 @@ func cmdPipeline() *cobra.Command {
 					return fmt.Errorf("adapt to model: %w", err)
 				}
 
-				memStore := webstore.New()
-				memStore.AddReport(rx)
+				sqliteStore, err := webstore.NewSQLiteStore()
+				if err != nil {
+					return fmt.Errorf("create SQLite store: %w", err)
+				}
+				defer sqliteStore.Close()
 
-				stats := memStore.Stats()
+				if err := sqliteStore.AddReport(rx); err != nil {
+					return fmt.Errorf("add report to store: %w", err)
+				}
+
+				stats := sqliteStore.Stats()
 				log.Printf("store: %d reports, %d units, %d acts, %d steps",
 					stats.Reports, stats.Units, stats.Acts, stats.Steps)
 
 				sessions := auth.NewSessionStore()
-				h := handlers.New(memStore, sessions)
+				h := handlers.New(sqliteStore, sessions)
 
 				mux := http.NewServeMux()
 				fs := http.FileServer(http.Dir(staticDir))
