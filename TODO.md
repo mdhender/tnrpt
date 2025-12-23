@@ -10,30 +10,6 @@ Stages
 
 ---
 
-## Sprint 14 — Core Data Tables (Read-Only)
-
-**Goal**: Full read-only views of all major data types in an in-memory SQLite database.
-
-### Sprint 14 Tasks
-
-#### 14.1 — Schema and Table Components
-* [x] Create in-memory SQLite database instance with foreign key pragma
-* [x] Load schema on startup
-* [x] Units table with sorting
-* [x] Tiles/terrain table
-* [x] Movement history table
-* [x] Resources/items table
-
-#### 14.2 — Detail Views
-* [x] Unit detail page (click row → see full unit data)
-* [x] Tile detail page
-
-#### 14.3 — Navigation
-* [x] Sidebar navigation component
-* [x] Turn selector (switch between loaded turns)
-
----
-
 ## Sprint 15 — Authentication + Persistence
 
 **Goal**: Users log in and see only their data. Data persists to SQLite.
@@ -57,7 +33,7 @@ Stages
 * [ ] Verify user A cannot see user B's data
 
 #### 15.4 — SQLite Persistence
-* [ ] Switch from in-memory to file-based SQLite
+* [ ] Add flag to select in-memory or file-based SQLite
 * [ ] Add migration tooling if needed
 
 ---
