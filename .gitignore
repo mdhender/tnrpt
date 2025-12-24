@@ -7,7 +7,9 @@
 
 .idea/
 .vscode/
+/azul
 go.work
 go.work.sum
 /server
+/tmp/
 /tnrpt

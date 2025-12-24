@@ -16,6 +16,8 @@ type ReportFile struct {
 	SHA256    string    `json:"sha256"    db:"sha256"`
 	Mime      string    `json:"mime"      db:"mime"`
 	CreatedAt time.Time `json:"createdAt" db:"created_at"`
+	FsPath    string    `json:"fsPath"    db:"fs_path"`  // relative to data-dir
+	BatchID   *int64    `json:"batchId"   db:"batch_id"` // optional batch reference
 }
 
 // ReportX is the extracted subset of a ReportFile (map-render-relevant only).
@@ -35,6 +37,7 @@ type UnitX struct {
 	ID        int64  `json:"id"        db:"id"`
 	ReportXID int64  `json:"reportXId" db:"report_x_id"`
 	UnitID    string `json:"unitId"    db:"unit_id"` // e.g., "0987c4"
+	ClanID    string `json:"clanId"    db:"clan_id"` // e.g., "0987" (first 4 chars of unit_id)
 
 	TurnNo int `json:"turnNo" db:"turn_no"` // e.g., 90304
 
@@ -195,6 +198,46 @@ type TileSrc struct {
 	StepSeq int    `json:"stepSeq,omitempty" db:"step_seq"` // 1-based
 	Note    string `json:"note,omitempty"    db:"note"`
 }
+
+// UploadBatch groups multiple files in one ingest operation.
+type UploadBatch struct {
+	ID        int64     `json:"id"        db:"id"`
+	Game      string    `json:"game"      db:"game"`
+	ClanNo    string    `json:"clanNo"    db:"clan_no"`
+	TurnNo    int       `json:"turnNo"    db:"turn_no"`
+	CreatedBy string    `json:"createdBy" db:"created_by"` // CLI user or web session
+	CreatedAt time.Time `json:"createdAt" db:"created_at"`
+}
+
+// Work represents a job in the pipeline work queue.
+type Work struct {
+	ID           int64      `json:"id"           db:"id"`
+	ReportFileID int64      `json:"reportFileId" db:"report_file_id"`
+	Stage        string     `json:"stage"        db:"stage"`  // "extract", "parse"
+	Status       string     `json:"status"       db:"status"` // "queued", "running", "ok", "failed"
+	Attempt      int        `json:"attempt"      db:"attempt"`
+	AvailableAt  time.Time  `json:"availableAt"  db:"available_at"`
+	LockedBy     *string    `json:"lockedBy"     db:"locked_by"`
+	LockedAt     *time.Time `json:"lockedAt"    db:"locked_at"`
+	StartedAt    *time.Time `json:"startedAt"   db:"started_at"`
+	FinishedAt   *time.Time `json:"finishedAt"  db:"finished_at"`
+	ErrorCode    *string    `json:"errorCode"    db:"error_code"`
+	ErrorMessage *string    `json:"errorMessage" db:"error_message"`
+}
+
+// WorkStage constants for pipeline stages.
+const (
+	WorkStageExtract = "extract"
+	WorkStageParse   = "parse"
+)
+
+// WorkStatus constants for job status.
+const (
+	WorkStatusQueued  = "queued"
+	WorkStatusRunning = "running"
+	WorkStatusOk      = "ok"
+	WorkStatusFailed  = "failed"
+)
 
 // RenderJob describes a render request (units + turns + params).
 type RenderJob struct {

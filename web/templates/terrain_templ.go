@@ -13,7 +13,7 @@ import templruntime "github.com/a-h/templ/runtime"
 import (
 	"strconv"
 
-	"github.com/mdhender/tnrpt/web/store"
+	store "github.com/mdhender/tnrpt/stores/sqlite"
 )
 
 func TerrainPage(observations []store.TerrainObs) templ.Component {

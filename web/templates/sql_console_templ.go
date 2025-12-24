@@ -12,7 +12,7 @@ import templruntime "github.com/a-h/templ/runtime"
 
 import (
 	"fmt"
-	"github.com/mdhender/tnrpt/web/store"
+	store "github.com/mdhender/tnrpt/stores/sqlite"
 )
 
 func SQLConsole(query string, result *store.QueryResult, data LayoutData) templ.Component {

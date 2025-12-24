@@ -7,7 +7,9 @@
     "name": "\u003ctest-input\u003e",
     "sha256": "",
     "mime": "",
-    "createdAt": "0001-01-01T00:00:00Z"
+    "createdAt": "0001-01-01T00:00:00Z",
+    "fsPath": "",
+    "batchId": null
   },
   "reportX": {
     "id": 0,
@@ -21,6 +23,7 @@
         "id": 0,
         "reportXId": 0,
         "unitId": "0987",
+        "clanId": "",
         "turnNo": 89912,
         "startTN": "QQ 1010",
         "endTN": "QQ 1010",
