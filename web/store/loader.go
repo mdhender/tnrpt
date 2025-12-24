@@ -31,10 +31,15 @@ type Store interface {
 	AddReport(rx *model.ReportX) error
 }
 
-// LoadFromDir loads all .docx files from a directory into the store.
+var (
+	reDocxReportFileName = regexp.MustCompile(`^\d{4}.\d{4}-\d{2}.0\d{3}.docx$`)
+	reTextReportFileName = regexp.MustCompile(`^\d{4}.\d{4}-\d{2}.0\d{3}.report.txt$`)
+)
+
+// LoadDocxFromDir loads all .docx files from a directory into the store.
 // File names are expected to follow the pattern: GGGG.YYYY-MM.CCCC.docx
 // where GGGG is game, YYYY-MM is turn, CCCC is clan.
-func LoadFromDir(s Store, dir string) error {
+func LoadDocxFromDir(s Store, dir string) error {
 	entries, err := os.ReadDir(dir)
 	if err != nil {
 		return fmt.Errorf("read dir: %w", err)
@@ -46,12 +51,14 @@ func LoadFromDir(s Store, dir string) error {
 			continue
 		}
 		name := entry.Name()
-		if !strings.HasSuffix(strings.ToLower(name), ".docx") {
+		if !reDocxReportFileName.MatchString(strings.ToLower(name)) {
+			continue
+		} else if !strings.HasSuffix(strings.ToLower(name), ".docx") {
 			continue
 		}
 
 		path := filepath.Join(dir, name)
-		if err := LoadFile(s, path); err != nil {
+		if err := LoadDocxFile(s, path); err != nil {
 			log.Printf("store: load %s: %v", name, err)
 			failed++
 			continue
@@ -59,13 +66,16 @@ func LoadFromDir(s Store, dir string) error {
 		loaded++
 	}
 
-	log.Printf("store: loaded %d files (%d failed) from %s", loaded, failed, dir)
+	log.Printf("store: loaded %d docx files (%d failed) from %s", loaded, failed, dir)
 	return nil
 }
 
-// LoadFile loads a single .docx file into the store.
-func LoadFile(s Store, path string) error {
+// LoadDocxFile loads a single .docx file into the store.
+func LoadDocxFile(s Store, path string) error {
 	name := filepath.Base(path)
+	if !reDocxReportFileName.MatchString(strings.ToLower(name)) {
+		return fmt.Errorf("invalid report file name")
+	}
 	game, clanNo := parseFilename(name)
 
 	data, err := os.ReadFile(path)
@@ -153,6 +163,13 @@ type jsonGame struct {
 		Handle string `json:"handle"`
 		Clan   int    `json:"clan"`
 	} `json:"clans"`
+	Turns []struct {
+		ID      int    `json:"id"`               // e.g., 89912 for year 899 month 12
+		Year    int    `json:"year"`             // e.g., 899
+		Month   int    `json:"month"`            // e.g., 12
+		DueDate string `json:"orders-due-date"` // "2025/11/15 18:00:00 Australia/Sydney"
+		Active  bool   `json:"active"`
+	} `json:"turns"`
 }
 
 func loadUsersFromJSON(ctx context.Context, db *sql.DB, path string) error {
@@ -248,6 +265,32 @@ func loadGamesFromJSON(ctx context.Context, db *sql.DB, path string) error {
 				return fmt.Errorf("insert game clan %s/%s: %w", jg.ID, c.Handle, err)
 			}
 		}
+
+		// Load game turns with timezone conversion to UTC
+		for _, t := range jg.Turns {
+			var dueDateUTC sql.NullString
+			if t.DueDate != "" {
+				// Parse format: "2025/11/15 18:00:00 Australia/Sydney"
+				utc, err := parseDueDateWithTimezone(t.DueDate)
+				if err != nil {
+					return fmt.Errorf("invalid due_date %q for game %s turn %d: %w", t.DueDate, jg.ID, t.ID, err)
+				}
+				dueDateUTC = sql.NullString{String: utc.Format(time.RFC3339), Valid: true}
+			}
+
+			isActive := 0
+			if t.Active {
+				isActive = 1
+			}
+
+			_, err = db.ExecContext(ctx, `
+				INSERT INTO game_turns (game_id, turn_id, year, month, is_active, due_date) VALUES (?, ?, ?, ?, ?, ?)
+				ON CONFLICT(game_id, turn_id) DO UPDATE SET year = excluded.year, month = excluded.month, is_active = excluded.is_active, due_date = excluded.due_date
+			`, jg.ID, t.ID, t.Year, t.Month, isActive, dueDateUTC)
+			if err != nil {
+				return fmt.Errorf("insert game turn %s/%d: %w", jg.ID, t.ID, err)
+			}
+		}
 	}
 
 	return nil
@@ -260,4 +303,29 @@ func hasRole(roles []string, target string) bool {
 		}
 	}
 	return false
+}
+
+// parseDueDateWithTimezone parses a due date string in format "2025/11/15 18:00:00 Australia/Sydney"
+// and returns the time in UTC.
+func parseDueDateWithTimezone(s string) (time.Time, error) {
+	// Find the last space to separate datetime from timezone
+	lastSpace := strings.LastIndex(s, " ")
+	if lastSpace == -1 {
+		return time.Time{}, fmt.Errorf("invalid format: expected 'YYYY/MM/DD HH:MM:SS Timezone'")
+	}
+
+	datetimePart := s[:lastSpace]
+	tzPart := s[lastSpace+1:]
+
+	loc, err := time.LoadLocation(tzPart)
+	if err != nil {
+		return time.Time{}, fmt.Errorf("invalid timezone %q: %w", tzPart, err)
+	}
+
+	t, err := time.ParseInLocation("2006/01/02 15:04:05", datetimePart, loc)
+	if err != nil {
+		return time.Time{}, fmt.Errorf("invalid datetime %q: %w", datetimePart, err)
+	}
+
+	return t.UTC(), nil
 }

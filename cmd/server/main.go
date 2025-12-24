@@ -11,6 +11,9 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"path/filepath"
+	"strconv"
+	"strings"
 	"syscall"
 	"time"
 
@@ -22,15 +25,18 @@ import (
 
 func main() {
 	addr := flag.String("addr", ":8787", "HTTP listen address")
-	dataDir := flag.String("data", "testdata/sprint-13", "directory containing .docx turn reports")
+	authAs := flag.String("auth-as", "", "auto-authenticate as handle (e.g., xtc69) for testing")
+	authAsClan := flag.String("auth-as-clan", "", "auto-authenticate as game.clan (e.g., 0301.500) for testing")
+	dataPath := flag.String("data", "", "directory containing .docx turn reports")
 	dbPath := flag.String("db", "", "SQLite database file path (empty = in-memory)")
+	gameDataPath := flag.String("game-data", "testdata/sprint-13", "path to games initialization file")
 	logWithDefaultFlags := flag.Bool("log-with-default-flags", false, "log with default flags")
 	logWithShortFileName := flag.Bool("log-with-shortfile", true, "log with short file name")
 	logWithTimestamp := flag.Bool("log-with-timestamp", false, "log with timestamp")
+	showVersion := flag.Bool("version", false, "show version and exit")
 	staticDir := flag.String("static", "web/static", "static files directory")
 	timeout := flag.Duration("timeout", 0, "auto-shutdown after duration (e.g., 5s, 1m)")
-	showVersion := flag.Bool("version", false, "show version and exit")
-	authAs := flag.String("auth-as", "", "auto-authenticate as game:handle (e.g., 0301:clan0500) for testing")
+	userDataPath := flag.String("user-data", "testdata/sprint-13", "path to users initialization file")
 	flag.Parse()
 
 	if *showVersion {
@@ -50,13 +56,13 @@ func main() {
 	}
 	log.SetFlags(logFlags)
 
-	err := run(*dataDir, *dbPath, *staticDir, *authAs, *addr, *timeout)
+	err := run(*dbPath, *dataPath, *gameDataPath, *userDataPath, *staticDir, *authAs, *authAsClan, *addr, *timeout)
 	if err != nil {
 		log.Printf("error: %v\n", err)
 	}
 }
 
-func run(dataDir, dbPath, staticDir, authAs, addr string, timeout time.Duration) error {
+func run(dbPath, dataPath, gameDataPath, userDataPath, staticDir, authAs, authAsClan, addr string, timeout time.Duration) error {
 	var sqliteStore *store.SQLiteStore
 	var err error
 
@@ -80,17 +86,24 @@ func run(dataDir, dbPath, staticDir, authAs, addr string, timeout time.Duration)
 	ctx := context.Background()
 
 	// Load users and games first (needed for auth)
-	usersPath := dataDir + "/users.json"
-	if err := sqliteStore.LoadUsersFromJSON(ctx, usersPath); err != nil {
-		return fmt.Errorf("failed to load users: %w", err)
+	if userDataPath != "" {
+		usersPath := filepath.Join(userDataPath, "users.json")
+		if err := sqliteStore.LoadUsersFromJSON(ctx, usersPath); err != nil {
+			return fmt.Errorf("failed to load users: %w", err)
+		}
 	}
-	gamesPath := dataDir + "/games.json"
-	if err := sqliteStore.LoadGamesFromJSON(ctx, gamesPath); err != nil {
-		return fmt.Errorf("failed to load games: %w", err)
+	if gameDataPath != "" {
+		gamesPath := filepath.Join(gameDataPath, "games.json")
+		if err := sqliteStore.LoadGamesFromJSON(ctx, gamesPath); err != nil {
+			return fmt.Errorf("failed to load games: %w", err)
+		}
 	}
 
-	if err := store.LoadFromDir(sqliteStore, dataDir); err != nil {
-		return fmt.Errorf("failed to load data: %w", err)
+	// load any new data files
+	if dataPath != "" {
+		if err := store.LoadDocxFromDir(sqliteStore, dataPath); err != nil {
+			return fmt.Errorf("failed to load data: %w", err)
+		}
 	}
 
 	stats := sqliteStore.Stats()
@@ -100,21 +113,42 @@ func run(dataDir, dbPath, staticDir, authAs, addr string, timeout time.Duration)
 	sessions := auth.NewSessionStore()
 	h := handlers.New(sqliteStore, sessions)
 
-	if authAs != "" {
-		// Parse game:handle format
-		parts := parseAuthAs(authAs)
+	if authAs != "" && authAsClan != "" {
+		return fmt.Errorf("auth: cannot use both --auth-as and --auth-as-clan")
+	}
+
+	if authAsClan != "" {
+		parts := strings.SplitN(authAsClan, ".", 2)
 		if len(parts) != 2 {
-			return fmt.Errorf("auth: invalid format %q (expected game:handle)", authAs)
+			return fmt.Errorf("auth: invalid format %q (expected game.clan)", authAsClan)
 		}
-		gameID, handle := parts[0], parts[1]
-		clanNo, err := sqliteStore.GetClanForUser(ctx, gameID, handle)
+		gameID := parts[0]
+		clanNo, err := strconv.Atoi(parts[1])
 		if err != nil {
-			log.Printf("auth: failed to get clan for %s: %v", authAs, err)
-		} else if clanNo <= 0 {
-			return fmt.Errorf("auth: user %s not found in game %s", handle, gameID)
+			return fmt.Errorf("auth: invalid clan number %q: %v", parts[1], err)
+		}
+		handle, err := sqliteStore.GetHandleForClan(ctx, gameID, clanNo)
+		if err != nil {
+			return fmt.Errorf("auth: failed to get handle for %s: %v", authAsClan, err)
+		}
+		if handle == "" {
+			return fmt.Errorf("auth: clan %d not found in game %s", clanNo, gameID)
 		}
 		h.SetAutoAuth(gameID, handle, clanNo)
-		log.Printf("auth: auto-authenticating as %s (clan %d)", authAs, clanNo)
+		log.Printf("auth: auto-authenticating as %s (game %s, clan %d)", handle, gameID, clanNo)
+	}
+
+	if authAs != "" {
+		games, err := sqliteStore.GetGamesForUser(ctx, authAs)
+		if err != nil {
+			return fmt.Errorf("auth: failed to get games for %s: %v", authAs, err)
+		}
+		if len(games) == 0 {
+			return fmt.Errorf("auth: user %s not found in any game", authAs)
+		}
+		game := games[0]
+		h.SetAutoAuth(game.GameID, authAs, game.ClanNo)
+		log.Printf("auth: auto-authenticating as %s (game %s, clan %d)", authAs, game.GameID, game.ClanNo)
 	}
 
 	mux := http.NewServeMux()
@@ -137,6 +171,20 @@ func run(dataDir, dbPath, staticDir, authAs, addr string, timeout time.Duration)
 	mux.HandleFunc("/terrain", h.RequireAuth(h.Terrain))
 	mux.HandleFunc("/tiles/{grid}/{col}/{row}", h.RequireAuth(h.TileDetail))
 	mux.HandleFunc("/resources", h.RequireAuth(h.Resources))
+	mux.HandleFunc("/upload", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == http.MethodPost {
+			h.RequireGM(h.UploadHandler)(w, r)
+		} else {
+			h.RequireGM(h.UploadPage)(w, r)
+		}
+	})
+	mux.HandleFunc("/admin/sql", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == http.MethodPost {
+			h.RequireGM(h.SQLConsoleExec)(w, r)
+		} else {
+			h.RequireGM(h.SQLConsolePage)(w, r)
+		}
+	})
 
 	server := &http.Server{
 		Addr:         addr,
@@ -176,14 +224,5 @@ func run(dataDir, dbPath, staticDir, authAs, addr string, timeout time.Duration)
 	}
 
 	log.Printf("server: stopped")
-	return nil
-}
-
-func parseAuthAs(s string) []string {
-	for i, c := range s {
-		if c == ':' {
-			return []string{s[:i], s[i+1:]}
-		}
-	}
 	return nil
 }

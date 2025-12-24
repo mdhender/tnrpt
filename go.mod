@@ -6,6 +6,7 @@ require (
 	github.com/a-h/templ v0.3.960
 	github.com/maloquacious/hexg v1.0.1
 	github.com/maloquacious/semver v0.4.0
+	github.com/mdhender/phrases/v2 v2.0.0
 	github.com/spf13/cobra v1.10.2
 	golang.org/x/crypto v0.46.0
 	modernc.org/sqlite v1.41.0

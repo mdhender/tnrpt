@@ -1,0 +1,334 @@
+// TNRpt Database Schema for dbdiagram.io
+// Copyright (c) 2025 Michael D Henderson. All rights reserved.
+//
+// Canonical schema: web/store/schema.sql
+
+// ============================================
+// Source Documents
+// ============================================
+
+Table report_files {
+  id INTEGER [pk]
+  game TEXT [not null]
+  clan_no TEXT [not null]
+  turn_no INTEGER [not null]
+  name TEXT [not null]
+  sha256 TEXT [not null]
+  mime TEXT [not null]
+  created_at TEXT [not null]
+
+  indexes {
+    (game, turn_no, clan_no)
+  }
+}
+
+Table report_extracts {
+  id INTEGER [pk]
+  report_file_id INTEGER [not null, ref: > report_files.id]
+  game TEXT [not null]
+  clan_no TEXT [not null]
+  turn_no INTEGER [not null]
+  created_at TEXT [not null]
+
+  indexes {
+    report_file_id
+    (game, turn_no, clan_no)
+  }
+}
+
+// ============================================
+// Unit Extracts
+// ============================================
+
+Table unit_extracts {
+  id INTEGER [pk]
+  report_x_id INTEGER [not null, ref: > report_extracts.id]
+  unit_id TEXT [not null]
+  clan_id TEXT [not null, note: 'owning clan extracted from unit_id']
+  turn_no INTEGER [not null]
+  start_grid TEXT [not null]
+  start_col INTEGER [not null]
+  start_row INTEGER [not null]
+  end_grid TEXT [not null]
+  end_col INTEGER [not null]
+  end_row INTEGER [not null]
+  src_doc_id INTEGER
+  src_note TEXT
+
+  indexes {
+    report_x_id
+    (report_x_id, unit_id) [unique]
+  }
+}
+
+// ============================================
+// Acts (Actions)
+// ============================================
+
+Table acts {
+  id INTEGER [pk]
+  unit_x_id INTEGER [not null, ref: > unit_extracts.id]
+  seq INTEGER [not null]
+  kind TEXT [not null, note: 'follow|goto|move|scout|status']
+  ok INTEGER [note: 'NULL/0/1']
+  note TEXT
+  target_unit_id TEXT [note: 'follow payload']
+  dest_grid TEXT [note: 'goto payload']
+  dest_col INTEGER
+  dest_row INTEGER
+  src_doc_id INTEGER
+  src_turn_no INTEGER
+  src_unit_id TEXT
+  src_act_seq INTEGER
+  src_note TEXT
+
+  indexes {
+    unit_x_id
+    (unit_x_id, seq) [unique]
+  }
+}
+
+// ============================================
+// Steps
+// ============================================
+
+Table steps {
+  id INTEGER [pk]
+  act_id INTEGER [not null, ref: > acts.id]
+  seq INTEGER [not null]
+  kind TEXT [not null, note: 'adv|still|patrol|obs']
+  ok INTEGER [note: 'NULL/0/1']
+  note TEXT
+  dir TEXT [note: 'adv payload']
+  fail_why TEXT
+  terr TEXT [note: 'obs payload']
+  special INTEGER [not null, default: 0]
+  label TEXT
+  src_doc_id INTEGER
+  src_turn_no INTEGER
+  src_unit_id TEXT
+  src_act_seq INTEGER
+  src_step_seq INTEGER
+  src_note TEXT
+
+  indexes {
+    act_id
+    kind
+    (act_id, seq) [unique]
+  }
+}
+
+// ============================================
+// Step Encounters
+// ============================================
+
+Table step_enc_units {
+  id INTEGER [pk]
+  step_id INTEGER [not null, ref: > steps.id]
+  unit_id TEXT [not null]
+  name TEXT
+  clan_no TEXT
+
+  indexes {
+    step_id
+  }
+}
+
+Table step_enc_sets {
+  id INTEGER [pk]
+  step_id INTEGER [not null, ref: > steps.id]
+  name TEXT [not null]
+  kind TEXT
+  clan_no TEXT
+
+  indexes {
+    step_id
+  }
+}
+
+Table step_enc_rsrc {
+  id INTEGER [pk]
+  step_id INTEGER [not null, ref: > steps.id]
+  kind TEXT [not null]
+  qty INTEGER
+
+  indexes {
+    step_id
+  }
+}
+
+// ============================================
+// Step Borders
+// ============================================
+
+Table step_borders {
+  id INTEGER [pk]
+  step_id INTEGER [not null, ref: > steps.id]
+  dir TEXT [not null]
+  kind TEXT [not null]
+
+  indexes {
+    step_id
+  }
+}
+
+// ============================================
+// Tiles (Walker Output)
+// ============================================
+
+Table tiles {
+  id INTEGER [pk]
+  hex TEXT [not null, unique, note: 'hexg.Hex.ConciseString() format']
+  terr TEXT
+  special_label TEXT
+
+  indexes {
+    hex
+  }
+}
+
+Table tile_units {
+  id INTEGER [pk]
+  tile_id INTEGER [not null, ref: > tiles.id]
+  unit_id TEXT [not null]
+  name TEXT
+  clan_no TEXT
+
+  indexes {
+    tile_id
+  }
+}
+
+Table tile_sets {
+  id INTEGER [pk]
+  tile_id INTEGER [not null, ref: > tiles.id]
+  name TEXT [not null]
+  kind TEXT
+  clan_no TEXT
+
+  indexes {
+    tile_id
+  }
+}
+
+Table tile_rsrc {
+  id INTEGER [pk]
+  tile_id INTEGER [not null, ref: > tiles.id]
+  kind TEXT [not null]
+  qty INTEGER
+
+  indexes {
+    tile_id
+  }
+}
+
+Table tile_borders {
+  id INTEGER [pk]
+  tile_id INTEGER [not null, ref: > tiles.id]
+  dir TEXT [not null]
+  kind TEXT [not null]
+
+  indexes {
+    tile_id
+  }
+}
+
+Table tile_src {
+  id INTEGER [pk]
+  tile_id INTEGER [not null, ref: > tiles.id]
+  doc_id INTEGER [not null]
+  unit_id TEXT
+  turn_no INTEGER
+  act_seq INTEGER
+  step_seq INTEGER
+  note TEXT
+
+  indexes {
+    tile_id
+    doc_id
+  }
+}
+
+// ============================================
+// Render Jobs
+// ============================================
+
+Table render_jobs {
+  id INTEGER [pk]
+  game TEXT [not null]
+  clan_no TEXT [not null]
+  created_at TEXT [not null]
+  wxx_path TEXT
+  wxx_sha TEXT
+
+  indexes {
+    (game, clan_no)
+  }
+}
+
+Table render_job_units {
+  id INTEGER [pk]
+  job_id INTEGER [not null, ref: > render_jobs.id]
+  unit_id TEXT [not null]
+
+  indexes {
+    (job_id, unit_id) [unique]
+  }
+}
+
+Table render_job_turns {
+  id INTEGER [pk]
+  job_id INTEGER [not null, ref: > render_jobs.id]
+  turn_no INTEGER [not null]
+
+  indexes {
+    (job_id, turn_no) [unique]
+  }
+}
+
+// ============================================
+// Users & Authentication
+// ============================================
+
+Table users {
+  handle TEXT [pk]
+  user_name TEXT [not null]
+  email TEXT
+  timezone TEXT
+  password_hash TEXT [not null]
+  created_at TEXT [not null]
+}
+
+Table user_roles {
+  id INTEGER [pk]
+  user_handle TEXT [not null, ref: > users.handle]
+  role TEXT [not null]
+
+  indexes {
+    user_handle
+    (user_handle, role) [unique]
+  }
+}
+
+// ============================================
+// Games & Clan Membership
+// ============================================
+
+Table games {
+  id TEXT [pk]
+  description TEXT
+}
+
+Table game_clans {
+  id INTEGER [pk]
+  game_id TEXT [not null, ref: > games.id]
+  user_handle TEXT [not null, ref: > users.handle]
+  clan_no INTEGER [not null]
+
+  indexes {
+    game_id
+    user_handle
+    (game_id, user_handle) [unique]
+    (game_id, clan_no) [unique]
+  }
+}

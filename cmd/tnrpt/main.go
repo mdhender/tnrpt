@@ -5,6 +5,8 @@ package main
 import (
 	"bytes"
 	"context"
+	"crypto/sha256"
+	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -13,10 +15,13 @@ import (
 	"os"
 	"os/signal"
 	"path/filepath"
+	"regexp"
 	"sort"
+	"strings"
 	"syscall"
 	"time"
 
+	"github.com/mdhender/phrases/v2"
 	"github.com/mdhender/tnrpt"
 	"github.com/mdhender/tnrpt/adapters"
 	"github.com/mdhender/tnrpt/model"
@@ -69,10 +74,11 @@ func main() {
 			return nil
 		},
 	}
-	cmdRoot.AddCommand(cmdCompactDB())
-	cmdRoot.AddCommand(cmdInitDB())
+	cmdRoot.AddCommand(cmdDb())
 	cmdRoot.AddCommand(cmdParse())
+	cmdRoot.AddCommand(cmdPhrase())
 	cmdRoot.AddCommand(cmdPipeline())
+	cmdRoot.AddCommand(cmdUpload())
 	cmdRoot.AddCommand(cmdWalk())
 	cmdRoot.AddCommand(cmdVersion())
 	if err := addFlags(cmdRoot); err != nil {
@@ -84,9 +90,27 @@ func main() {
 	}
 }
 
-func cmdCompactDB() *cobra.Command {
+func cmdDb() *cobra.Command {
+	showBuildInfo := false
+	addFlags := func(cmd *cobra.Command) error {
+		cmd.Flags().BoolVar(&showBuildInfo, "build-info", showBuildInfo, "show build information")
+		return nil
+	}
 	var cmd = &cobra.Command{
-		Use:          "compact-db <database-path>",
+		Use:   "db",
+		Short: "database tools",
+	}
+	cmd.AddCommand(cmdDbCompact())
+	cmd.AddCommand(cmdDbInit())
+	if err := addFlags(cmd); err != nil {
+		log.Fatal(err)
+	}
+	return cmd
+}
+
+func cmdDbCompact() *cobra.Command {
+	var cmd = &cobra.Command{
+		Use:          "compact <database-path>",
 		Short:        "Compact a SQLite database for backup/export",
 		Long:         `Runs VACUUM and checkpoints WAL to create a single compact database file suitable for backup or export.`,
 		SilenceUsage: true,
@@ -94,22 +118,22 @@ func cmdCompactDB() *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			dbPath := args[0]
 
-			log.Printf("compact-db: compacting database at %s", dbPath)
+			log.Printf("db: compact: compacting database at %s", dbPath)
 
 			if err := webstore.CompactDatabase(dbPath); err != nil {
 				return fmt.Errorf("compact database: %w", err)
 			}
 
-			log.Printf("compact-db: database compacted successfully")
+			log.Printf("db: compact: database compacted successfully")
 			return nil
 		},
 	}
 	return cmd
 }
 
-func cmdInitDB() *cobra.Command {
+func cmdDbInit() *cobra.Command {
 	var cmd = &cobra.Command{
-		Use:          "init-db <database-path>",
+		Use:          "initb <database-path>",
 		Short:        "Create and initialize a new SQLite database",
 		Long:         `Creates a new SQLite database file and initializes the schema. The database file must not already exist.`,
 		SilenceUsage: true,
@@ -117,14 +141,14 @@ func cmdInitDB() *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			dbPath := args[0]
 
-			log.Printf("init-db: creating database at %s", dbPath)
+			log.Printf("db: initb: creating database at %s", dbPath)
 
 			if err := webstore.InitDatabase(dbPath); err != nil {
 				return fmt.Errorf("init database: %w", err)
 			}
 
-			log.Printf("init-db: database created successfully")
-			log.Printf("init-db: WAL mode enabled for concurrent access")
+			log.Printf("db: initb: database created successfully")
+			log.Printf("db: initb: WAL mode enabled for concurrent access")
 			return nil
 		},
 	}
@@ -182,6 +206,31 @@ func cmdParse() *cobra.Command {
 				log.Printf("%s: wrote %d bytes\n", outputFile, len(data))
 			}
 
+			return nil
+		},
+	}
+	if err := addFlags(cmd); err != nil {
+		log.Fatal(err)
+	}
+	return cmd
+}
+
+func cmdPhrase() *cobra.Command {
+	length := 6
+	addFlags := func(cmd *cobra.Command) error {
+		cmd.Flags().IntVar(&length, "length", length, "number of words in phrase")
+		return nil
+	}
+	var cmd = &cobra.Command{
+		Use:   "phrase",
+		Short: "random phrase",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			if length < 1 {
+				length = 1
+			} else if length > 16 {
+				length = 16
+			}
+			fmt.Println(phrases.Generate(length))
 			return nil
 		},
 	}
@@ -471,6 +520,165 @@ func cmdPipeline() *cobra.Command {
 		log.Fatal(err)
 	}
 	return cmd
+}
+
+func cmdUpload() *cobra.Command {
+	var dbPath string
+	var file string
+	var game string
+	var turn string
+	var clan string
+	addFlags := func(cmd *cobra.Command) error {
+		cmd.Flags().StringVar(&dbPath, "db", "", "path to SQLite database (required)")
+		cmd.Flags().StringVar(&file, "file", "", "path to turn report file (.docx or .report.txt)")
+		cmd.Flags().StringVar(&game, "game", "", "game ID (4-digit, e.g., 0301)")
+		cmd.Flags().StringVar(&turn, "turn", "", "turn ID (YYYY-MM format, e.g., 0899-12)")
+		cmd.Flags().StringVar(&clan, "clan", "", "clan number (0001-0999, extracted from filename if not provided)")
+		cmd.MarkFlagRequired("db")
+		cmd.MarkFlagRequired("file")
+		cmd.MarkFlagRequired("game")
+		cmd.MarkFlagRequired("turn")
+		return nil
+	}
+	var cmd = &cobra.Command{
+		Use:   "upload",
+		Short: "Upload a turn report to the database",
+		Long: `Upload a turn report file (.docx or .report.txt) to the database.
+Uses the same parsing pipeline as the web upload handler.
+
+File naming patterns:
+  CCCC.docx                      - clan only (0001-0999)
+  GGGG.YYYY-MM.CCCC.report.txt   - game, turn, clan
+
+Examples:
+  tnrpt upload --db data/tnrpt.db --file 0987.docx --game 0301 --turn 0899-12
+  tnrpt upload --db data/tnrpt.db --file 0301.0899-12.0987.report.txt --game 0301 --turn 0899-12`,
+		SilenceUsage: true,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			filename := filepath.Base(file)
+			fileClan, fileGame, fileTurn := parseUploadFilename(filename)
+
+			if clan == "" {
+				if fileClan == "" {
+					return fmt.Errorf("clan not provided and could not be extracted from filename")
+				}
+				clan = fileClan
+			}
+
+			if fileGame != "" && fileGame != game {
+				return fmt.Errorf("game in filename (%s) does not match --game (%s)", fileGame, game)
+			}
+			if fileTurn != "" && fileTurn != turn {
+				return fmt.Errorf("turn in filename (%s) does not match --turn (%s)", fileTurn, turn)
+			}
+
+			data, err := os.ReadFile(file)
+			if err != nil {
+				return fmt.Errorf("read file: %w", err)
+			}
+
+			store, err := webstore.NewSQLiteStoreWithConfig(webstore.StoreConfig{Path: dbPath})
+			if err != nil {
+				return fmt.Errorf("open database: %w", err)
+			}
+			defer store.Close()
+
+			var text []byte
+			if strings.HasSuffix(strings.ToLower(filename), ".docx") {
+				doc, err := docx.ParseReader(bytes.NewReader(data), true, true, true, false, false)
+				if err != nil {
+					return fmt.Errorf("parse docx: %w", err)
+				}
+
+				rpt, err := report.ParseReportText(doc, true, true, true, false, false)
+				if err != nil {
+					return fmt.Errorf("parse report: %w", err)
+				}
+
+				for _, section := range rpt.Sections {
+					text = append(text, bytes.Join(section.Lines, []byte{'\n'})...)
+					text = append(text, '\n')
+				}
+			} else {
+				text = data
+			}
+
+			parsedTurn, err := bistre.ParseInput(filename, turn, text, false, false, false, false, false, false, false, false, bistre.ParseConfig{})
+			if err != nil {
+				return fmt.Errorf("parse turn report: %w", err)
+			}
+			if parsedTurn == nil {
+				return fmt.Errorf("parser returned no data")
+			}
+
+			turnNo := 100*parsedTurn.Year + parsedTurn.Month
+			now := time.Now().UTC()
+
+			hash := sha256.Sum256(data)
+			var mime string
+			if strings.HasSuffix(strings.ToLower(filename), ".docx") {
+				mime = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+			} else {
+				mime = "text/plain"
+			}
+
+			rf := &model.ReportFile{
+				Game:      game,
+				ClanNo:    clan,
+				TurnNo:    turnNo,
+				Name:      filename,
+				SHA256:    hex.EncodeToString(hash[:]),
+				Mime:      mime,
+				CreatedAt: now,
+			}
+			if err := store.AddReportFile(rf); err != nil {
+				return fmt.Errorf("store report file: %w", err)
+			}
+
+			rx, err := adapters.BistreTurnToModelReportX(filename, parsedTurn, game, clan)
+			if err != nil {
+				return fmt.Errorf("convert report: %w", err)
+			}
+			rx.ReportFileID = rf.ID
+
+			if err := store.AddReport(rx); err != nil {
+				return fmt.Errorf("store report: %w", err)
+			}
+
+			units := len(rx.Units)
+			acts := 0
+			steps := 0
+			for _, u := range rx.Units {
+				acts += len(u.Acts)
+				for _, a := range u.Acts {
+					steps += len(a.Steps)
+				}
+			}
+
+			log.Printf("upload: %s: game=%s turn=%s clan=%s units=%d acts=%d steps=%d",
+				filename, game, turn, clan, units, acts, steps)
+
+			return nil
+		},
+	}
+	if err := addFlags(cmd); err != nil {
+		log.Fatal(err)
+	}
+	return cmd
+}
+
+func parseUploadFilename(filename string) (clan, game, turn string) {
+	docxRe := regexp.MustCompile(`^(0\d{3})\.docx$`)
+	if matches := docxRe.FindStringSubmatch(filename); matches != nil {
+		return matches[1], "", ""
+	}
+
+	txtRe := regexp.MustCompile(`^(\d{4})\.(\d{4}-\d{2})\.(0\d{3})\.report\.txt$`)
+	if matches := txtRe.FindStringSubmatch(filename); matches != nil {
+		return matches[3], matches[1], matches[2]
+	}
+
+	return "", "", ""
 }
 
 func cmdWalk() *cobra.Command {

@@ -1,9 +1,13 @@
+*~
+*.db
+*.db-wal
+*.db-shm
+*.exe
+*.swp
+
 .idea/
 .vscode/
 go.work
 go.work.sum
-
-# SQLite database files
-*.db
-*.db-wal
-*.db-shm
+/server
+/tnrpt

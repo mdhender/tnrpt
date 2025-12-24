@@ -29,7 +29,7 @@
 - **model/**: New schema-aligned types (ReportFile, ReportX, UnitX, Act, Step, Tile) with SQLite Store
   - `store.go`: Store type with embedded schema.sql and repository methods
   - `types.go`: Domain types with db struct tags
-  - `schema.sql`: SQLite DDL for all tables (includes users table for auth)
+- **web/store/schema.sql**: SQLite DDL for all tables (includes users table for auth)
 - **model.go**: Legacy domain types (Turn_t, Move_t, etc.) — **deprecated**, use model/ package instead
 - **parsers/azul**: Legacy parser for turn reports - **deprecated**, use pipelines/parsers/bistre instead
 - **Domain packages**: coords, terrain, direction, edges, compass, items, resources, results, winds

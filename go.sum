@@ -17,6 +17,8 @@ github.com/maloquacious/semver v0.4.0 h1:TfCwmQ2J56BsWK9a1zoG3RcIiokYPe1J71hu3Kc
 github.com/maloquacious/semver v0.4.0/go.mod h1:0VQ90ipG1SLXCDcQo1bgYTBIpvXsEiNOnEF5Bs/HRYY=
 github.com/mattn/go-isatty v0.0.20 h1:xfD0iDuEKnDkl03q4limB+vH+GxLEtL/jb4xVJSWWEY=
 github.com/mattn/go-isatty v0.0.20/go.mod h1:W+V8PltTTMOvKvAeJH7IuucS94S2C6jfK/D7dTCTo3Y=
+github.com/mdhender/phrases/v2 v2.0.0 h1:P/FijTflCVczp7XsRjvByL6pOZVyxl3D77HYlW5pptk=
+github.com/mdhender/phrases/v2 v2.0.0/go.mod h1:c8fcyB2VOa/3miAd1BV4aNJBHC88TFVpOGokhunUSp8=
 github.com/ncruces/go-strftime v0.1.9 h1:bY0MQC28UADQmHmaF5dgpLmImcShSi2kHU9XLdhx/f4=
 github.com/ncruces/go-strftime v0.1.9/go.mod h1:Fwc5htZGVVkseilnfgOVb9mKy6w1naJmn9CehxcKcls=
 github.com/remyoudompheng/bigfft v0.0.0-20230129092748-24d4a6f8daec h1:W09IVJc94icq4NjY3clb7Lk8O1qJ8BdBEF8z0ibU0rE=

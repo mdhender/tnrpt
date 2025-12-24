@@ -265,3 +265,17 @@ CREATE TABLE IF NOT EXISTS game_clans (
 );
 CREATE INDEX IF NOT EXISTS idx_game_clans_game ON game_clans(game_id);
 CREATE INDEX IF NOT EXISTS idx_game_clans_user ON game_clans(user_handle);
+
+-- Game turns (year/month, is_active, due_date in UTC)
+CREATE TABLE IF NOT EXISTS game_turns (
+  id          INTEGER PRIMARY KEY,
+  game_id     TEXT NOT NULL REFERENCES games(id) ON DELETE CASCADE,
+  turn_id     INTEGER NOT NULL,  -- e.g., 89912 for year 899 month 12
+  year        INTEGER NOT NULL,
+  month       INTEGER NOT NULL,
+  is_active   INTEGER NOT NULL DEFAULT 0,
+  due_date    TEXT,  -- ISO8601 UTC timestamp
+  UNIQUE(game_id, turn_id)
+);
+CREATE INDEX IF NOT EXISTS idx_game_turns_game ON game_turns(game_id);
+CREATE INDEX IF NOT EXISTS idx_game_turns_active ON game_turns(game_id, is_active);

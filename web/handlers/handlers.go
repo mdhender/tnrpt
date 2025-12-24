@@ -74,6 +74,9 @@ func (h *Handlers) getLayoutData(r *http.Request, session *auth.Session) templat
 		}
 	}
 
+	isGM, _ := h.store.IsUserGM(r.Context(), session.User.Handle)
+	data.IsGM = isGM
+
 	return data
 }
 
@@ -88,7 +91,6 @@ func (h *Handlers) Sessions() *auth.SessionStore {
 }
 
 // SetAutoAuth configures automatic authentication for testing.
-// Format: "game:handle" (e.g., "0301:xtc69" or "0301:clan0500")
 func (h *Handlers) SetAutoAuth(gameID, handle string, clanNo int) {
 	h.autoAuthUser = &auth.User{
 		Handle:   handle,
@@ -96,13 +98,4 @@ func (h *Handlers) SetAutoAuth(gameID, handle string, clanNo int) {
 		GameID:   gameID,
 		ClanNo:   clanNo,
 	}
-}
-
-func splitGameHandle(s string) []string {
-	for i, c := range s {
-		if c == ':' {
-			return []string{s[:i], s[i+1:]}
-		}
-	}
-	return nil
 }
