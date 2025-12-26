@@ -29,10 +29,11 @@ import (
 	"github.com/mdhender/tnrpt/pipelines/parsers/bistre"
 	"github.com/mdhender/tnrpt/pipelines/parsers/docx"
 	"github.com/mdhender/tnrpt/pipelines/parsers/report"
+	"github.com/mdhender/tnrpt/pipelines/stages"
+	sqlite "github.com/mdhender/tnrpt/stores/sqlite"
 	"github.com/mdhender/tnrpt/walkers/anhinga"
 	"github.com/mdhender/tnrpt/web/auth"
 	"github.com/mdhender/tnrpt/web/handlers"
-	webstore "github.com/mdhender/tnrpt/web/store"
 	"github.com/spf13/cobra"
 )
 
@@ -77,6 +78,7 @@ func main() {
 	cmdRoot.AddCommand(cmdDb())
 	cmdRoot.AddCommand(cmdParse())
 	cmdRoot.AddCommand(cmdPhrase())
+	cmdRoot.AddCommand(cmdBistreParse())
 	cmdRoot.AddCommand(cmdPipeline())
 	cmdRoot.AddCommand(cmdUpload())
 	cmdRoot.AddCommand(cmdWalk())
@@ -120,7 +122,7 @@ func cmdDbCompact() *cobra.Command {
 
 			log.Printf("db: compact: compacting database at %s", dbPath)
 
-			if err := webstore.CompactDatabase(dbPath); err != nil {
+			if err := sqlite.CompactDatabase(dbPath); err != nil {
 				return fmt.Errorf("compact database: %w", err)
 			}
 
@@ -143,7 +145,7 @@ func cmdDbInit() *cobra.Command {
 
 			log.Printf("db: initb: creating database at %s", dbPath)
 
-			if err := webstore.InitDatabase(dbPath); err != nil {
+			if err := sqlite.InitDatabase(dbPath); err != nil {
 				return fmt.Errorf("init database: %w", err)
 			}
 
@@ -240,7 +242,7 @@ func cmdPhrase() *cobra.Command {
 	return cmd
 }
 
-func cmdPipeline() *cobra.Command {
+func cmdBistreParse() *cobra.Command {
 	var docxFile string // := filepath.Join("testdata", "0301.0899-12.0987.docx")
 	var textFile string // := filepath.Join("testdata", "0301.0899-12.0987.txt")
 	var game, clanNo string
@@ -276,8 +278,8 @@ func cmdPipeline() *cobra.Command {
 		return nil
 	}
 	var cmd = &cobra.Command{
-		Use:          "pipeline",
-		Short:        "Run a pipeline",
+		Use:          "bistre",
+		Short:        "Run the bistre parser pipeline (legacy synchronous path)",
 		SilenceUsage: true,
 		PreRunE: func(cmd *cobra.Command, args []string) error {
 			// cascade show flags up
@@ -298,7 +300,7 @@ func cmdPipeline() *cobra.Command {
 			var err error
 
 			// Open in-memory database
-			store, err := model.NewStore(ctx, ":memory:")
+			store, err := sqlite.NewSQLiteStore()
 			if err != nil {
 				return fmt.Errorf("create store: %w", err)
 			}
@@ -444,7 +446,7 @@ func cmdPipeline() *cobra.Command {
 					return fmt.Errorf("adapt to model: %w", err)
 				}
 
-				sqliteStore, err := webstore.NewSQLiteStore()
+				sqliteStore, err := sqlite.NewSQLiteStore()
 				if err != nil {
 					return fmt.Errorf("create SQLite store: %w", err)
 				}
@@ -577,7 +579,7 @@ Examples:
 				return fmt.Errorf("read file: %w", err)
 			}
 
-			store, err := webstore.NewSQLiteStoreWithConfig(webstore.StoreConfig{Path: dbPath})
+			store, err := sqlite.NewSQLiteStoreWithConfig(sqlite.StoreConfig{Path: dbPath})
 			if err != nil {
 				return fmt.Errorf("open database: %w", err)
 			}
@@ -736,6 +738,355 @@ func cmdWalk() *cobra.Command {
 		log.Fatal(err)
 	}
 	return cmd
+}
+
+func cmdPipeline() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "pipeline",
+		Short: "pipeline commands for report processing",
+		Long:  "Commands for ingesting, processing, and tracking report files through the pipeline.",
+	}
+	cmd.AddCommand(cmdPipelineIngest())
+	cmd.AddCommand(cmdPipelineStatus())
+	cmd.AddCommand(cmdPipelineWork())
+	return cmd
+}
+
+func cmdPipelineIngest() *cobra.Command {
+	var dbPath string
+	var dataDir string
+	var game string
+	var clan string
+	var turn int
+
+	cmd := &cobra.Command{
+		Use:   "ingest <file>...",
+		Short: "Ingest turn report files into the pipeline",
+		Long: `Ingest one or more turn report files (.docx or .txt) into the pipeline.
+
+Creates an upload batch and queues work items for processing:
+  - DOCX files are queued for the 'extract' stage
+  - TXT files are queued directly for the 'parse' stage
+
+Files are copied to {data-dir}/batches/{batch_id}/ with standardized names.
+Duplicate files (same SHA-256) are silently skipped (idempotent).
+
+Examples:
+  tnrpt pipeline ingest --db data/amp/tnrpt.db --data-dir data/amp --game 0301 --clan 0512 --turn 89912 *.docx
+  tnrpt pipeline ingest --db data/amp/tnrpt.db --data-dir data/amp --game 0301 --clan 0512 --turn 89912 report.txt`,
+		SilenceUsage: true,
+		Args:         cobra.MinimumNArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			ctx := context.Background()
+
+			store, err := sqlite.NewSQLiteStoreWithConfig(sqlite.StoreConfig{Path: dbPath})
+			if err != nil {
+				return fmt.Errorf("open database: %w", err)
+			}
+			defer store.Close()
+
+			svc := stages.NewIngestService(store, dataDir)
+
+			var files []stages.IngestRequest
+			for _, path := range args {
+				data, err := os.ReadFile(path)
+				if err != nil {
+					return fmt.Errorf("read %s: %w", path, err)
+				}
+				files = append(files, stages.IngestRequest{
+					Filename: filepath.Base(path),
+					Data:     data,
+				})
+			}
+
+			createdBy := fmt.Sprintf("cli:%s", os.Getenv("USER"))
+			batchID, results, err := svc.IngestBatch(ctx, game, clan, turn, createdBy, files)
+			if err != nil {
+				return fmt.Errorf("ingest batch: %w", err)
+			}
+
+			duplicates := 0
+			ingested := 0
+			for _, r := range results {
+				if r.Duplicate {
+					duplicates++
+				} else {
+					ingested++
+				}
+			}
+
+			log.Printf("pipeline: ingest: batch=%d ingested=%d duplicates=%d", batchID, ingested, duplicates)
+			return nil
+		},
+	}
+
+	cmd.Flags().StringVar(&dbPath, "db", "", "path to SQLite database (required)")
+	cmd.Flags().StringVar(&dataDir, "data-dir", "", "data directory for file storage (required)")
+	cmd.Flags().StringVar(&game, "game", "", "game ID (e.g., 0301)")
+	cmd.Flags().StringVar(&clan, "clan", "", "clan number (e.g., 0512)")
+	cmd.Flags().IntVar(&turn, "turn", 0, "turn number (e.g., 89912 for year 899, month 12)")
+	cmd.MarkFlagRequired("db")
+	cmd.MarkFlagRequired("data-dir")
+	cmd.MarkFlagRequired("game")
+	cmd.MarkFlagRequired("clan")
+	cmd.MarkFlagRequired("turn")
+
+	return cmd
+}
+
+func cmdPipelineStatus() *cobra.Command {
+	var dbPath string
+	var batchID int64
+	var showFailed bool
+	var stage string
+
+	cmd := &cobra.Command{
+		Use:   "status",
+		Short: "Show pipeline status",
+		Long: `Show pipeline work queue status.
+
+With --batch-id: shows summary for a specific batch
+With --failed: lists all failed jobs
+With --failed --stage: lists failed jobs for a specific stage
+
+Examples:
+  tnrpt pipeline status --db data/amp/tnrpt.db --batch-id 1
+  tnrpt pipeline status --db data/amp/tnrpt.db --failed
+  tnrpt pipeline status --db data/amp/tnrpt.db --failed --stage extract`,
+		SilenceUsage: true,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			ctx := context.Background()
+
+			store, err := sqlite.NewSQLiteStoreWithConfig(sqlite.StoreConfig{Path: dbPath})
+			if err != nil {
+				return fmt.Errorf("open database: %w", err)
+			}
+			defer store.Close()
+
+			if showFailed {
+				return showFailedJobs(ctx, store, stage)
+			}
+
+			if batchID > 0 {
+				return showBatchStatus(ctx, store, batchID)
+			}
+
+			return fmt.Errorf("specify --batch-id or --failed")
+		},
+	}
+
+	cmd.Flags().StringVar(&dbPath, "db", "", "path to SQLite database (required)")
+	cmd.Flags().Int64Var(&batchID, "batch-id", 0, "show summary for specific batch")
+	cmd.Flags().BoolVar(&showFailed, "failed", false, "list failed jobs")
+	cmd.Flags().StringVar(&stage, "stage", "", "filter by stage (extract, parse)")
+	cmd.MarkFlagRequired("db")
+
+	return cmd
+}
+
+func showBatchStatus(ctx context.Context, store *sqlite.SQLiteStore, batchID int64) error {
+	batch, err := store.GetUploadBatch(ctx, batchID)
+	if err != nil {
+		return fmt.Errorf("get batch: %w", err)
+	}
+	if batch == nil {
+		return fmt.Errorf("batch %d not found", batchID)
+	}
+
+	fmt.Printf("Batch %d (game=%s, clan=%s, turn=%d)\n", batch.ID, batch.Game, batch.ClanNo, batch.TurnNo)
+	fmt.Printf("Created: %s\n", batch.CreatedAt.Format(time.RFC3339))
+	fmt.Println()
+
+	summary, err := store.GetWorkSummaryByBatch(ctx, batchID)
+	if err != nil {
+		return fmt.Errorf("get work summary: %w", err)
+	}
+
+	fmt.Println("Work Summary:")
+	for _, stage := range []string{"extract", "parse"} {
+		statuses := summary[stage]
+		if statuses == nil {
+			statuses = make(map[string]int)
+		}
+		fmt.Printf("  %s: %d ok, %d running, %d queued, %d failed\n",
+			stage,
+			statuses["ok"],
+			statuses["running"],
+			statuses["queued"],
+			statuses["failed"])
+	}
+
+	return nil
+}
+
+func showFailedJobs(ctx context.Context, store *sqlite.SQLiteStore, stage string) error {
+	stages := []string{"extract", "parse"}
+	if stage != "" {
+		stages = []string{stage}
+	}
+
+	fmt.Println("Failed Jobs:")
+	total := 0
+	for _, s := range stages {
+		jobs, err := store.GetFailedWork(ctx, s)
+		if err != nil {
+			return fmt.Errorf("get failed work: %w", err)
+		}
+		for _, j := range jobs {
+			errCode := ""
+			if j.ErrorCode != nil {
+				errCode = *j.ErrorCode
+			}
+			fmt.Printf("  ID=%d  stage=%s  file_id=%d  error=%s\n", j.ID, j.Stage, j.ReportFileID, errCode)
+			total++
+		}
+	}
+
+	if total == 0 {
+		fmt.Println("  (none)")
+	} else {
+		fmt.Println()
+		fmt.Println("To retry: tnrpt pipeline work <stage> --retry-failed")
+	}
+
+	return nil
+}
+
+func cmdPipelineWork() *cobra.Command {
+	var dbPath string
+	var dataDir string
+	var pollInterval time.Duration
+	var retryFailed bool
+
+	cmd := &cobra.Command{
+		Use:   "work <stage>",
+		Short: "Process pipeline work queue",
+		Long: `Process jobs in the pipeline work queue.
+
+Stages:
+  extract  - Extract text from DOCX files
+  parse    - Parse extracted text into model tables
+  all      - Process extract then parse sequentially
+
+The worker claims jobs atomically and processes them one at a time.
+Use --poll-interval to run continuously, polling for new work.
+
+Examples:
+  tnrpt pipeline work --db data/amp/tnrpt.db --data-dir data/amp extract
+  tnrpt pipeline work --db data/amp/tnrpt.db --data-dir data/amp parse --poll-interval 5s
+  tnrpt pipeline work --db data/amp/tnrpt.db --data-dir data/amp all
+  tnrpt pipeline work --db data/amp/tnrpt.db --data-dir data/amp extract --retry-failed`,
+		SilenceUsage: true,
+		Args:         cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			ctx := context.Background()
+			stage := args[0]
+
+			if stage != "extract" && stage != "parse" && stage != "all" {
+				return fmt.Errorf("invalid stage %q: must be extract, parse, or all", stage)
+			}
+
+			store, err := sqlite.NewSQLiteStoreWithConfig(sqlite.StoreConfig{Path: dbPath})
+			if err != nil {
+				return fmt.Errorf("open database: %w", err)
+			}
+			defer store.Close()
+
+			worker := stages.NewWorkerService(store, dataDir, "")
+
+			if retryFailed {
+				return retryFailedJobs(ctx, store, stage)
+			}
+
+			if stage == "all" {
+				return runAllStages(ctx, worker, pollInterval)
+			}
+
+			return runWorker(ctx, worker, stage, pollInterval)
+		},
+	}
+
+	cmd.Flags().StringVar(&dbPath, "db", "", "path to SQLite database (required)")
+	cmd.Flags().StringVar(&dataDir, "data-dir", "", "data directory for file storage (required)")
+	cmd.Flags().DurationVar(&pollInterval, "poll-interval", 0, "poll interval for continuous processing (0 = process once)")
+	cmd.Flags().BoolVar(&retryFailed, "retry-failed", false, "reset failed jobs to queued and exit")
+	cmd.MarkFlagRequired("db")
+	cmd.MarkFlagRequired("data-dir")
+
+	return cmd
+}
+
+func runWorker(ctx context.Context, worker *stages.WorkerService, stage string, pollInterval time.Duration) error {
+	processed := 0
+	failed := 0
+
+	for {
+		jobProcessed, err := worker.ProcessJob(ctx, stage)
+		if err != nil {
+			log.Printf("pipeline: work: %s: error: %v", stage, err)
+			failed++
+		}
+		if jobProcessed {
+			if err == nil {
+				processed++
+				log.Printf("pipeline: work: %s: processed job (total: %d)", stage, processed)
+			}
+		} else {
+			if pollInterval == 0 {
+				log.Printf("pipeline: work: %s: no more jobs (processed: %d, failed: %d)", stage, processed, failed)
+				return nil
+			}
+			time.Sleep(pollInterval)
+		}
+	}
+}
+
+func runAllStages(ctx context.Context, worker *stages.WorkerService, pollInterval time.Duration) error {
+	for _, stage := range []string{model.WorkStageExtract, model.WorkStageParse} {
+		log.Printf("pipeline: work: processing %s stage", stage)
+		if err := runWorker(ctx, worker, stage, 0); err != nil {
+			return fmt.Errorf("%s: %w", stage, err)
+		}
+	}
+
+	if pollInterval > 0 {
+		log.Printf("pipeline: work: all stages complete, starting poll loop")
+		for {
+			for _, stage := range []string{model.WorkStageExtract, model.WorkStageParse} {
+				_, err := worker.ProcessJob(ctx, stage)
+				if err != nil {
+					log.Printf("pipeline: work: %s: error: %v", stage, err)
+				}
+			}
+			time.Sleep(pollInterval)
+		}
+	}
+
+	return nil
+}
+
+func retryFailedJobs(ctx context.Context, store *sqlite.SQLiteStore, stage string) error {
+	stages := []string{model.WorkStageExtract, model.WorkStageParse}
+	if stage != "all" {
+		stages = []string{stage}
+	}
+
+	total := 0
+	for _, s := range stages {
+		count, err := store.ResetFailedWork(ctx, s)
+		if err != nil {
+			return fmt.Errorf("reset failed %s jobs: %w", s, err)
+		}
+		if count > 0 {
+			log.Printf("pipeline: work: reset %d failed %s jobs", count, s)
+			total += count
+		}
+	}
+
+	if total == 0 {
+		log.Printf("pipeline: work: no failed jobs to reset")
+	}
+	return nil
 }
 
 func cmdVersion() *cobra.Command {

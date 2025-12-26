@@ -18,9 +18,9 @@ import (
 	"time"
 
 	"github.com/mdhender/tnrpt"
+	store "github.com/mdhender/tnrpt/stores/sqlite"
 	"github.com/mdhender/tnrpt/web/auth"
 	"github.com/mdhender/tnrpt/web/handlers"
-	"github.com/mdhender/tnrpt/web/store"
 )
 
 func main() {

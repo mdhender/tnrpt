@@ -1,6 +1,6 @@
 # Copyright (c) 2025 Michael D Henderson. All rights reserved.
 
-.PHONY: all build clean generate run test
+.PHONY: all build clean generate run test update-golden
 
 all: build
 
@@ -15,6 +15,9 @@ run: build
 
 test:
 	go test ./...
+
+update-golden:
+	cd adapters && go test -update-golden ./...
 
 clean:
 	go clean ./...

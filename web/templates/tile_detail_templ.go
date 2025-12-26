@@ -13,7 +13,7 @@ import templruntime "github.com/a-h/templ/runtime"
 import (
 	"fmt"
 
-	"github.com/mdhender/tnrpt/web/store"
+	store "github.com/mdhender/tnrpt/stores/sqlite"
 )
 
 func TileDetailPage(tile *store.TileDetail, data LayoutData) templ.Component {

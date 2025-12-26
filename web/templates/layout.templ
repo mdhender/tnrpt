@@ -5,7 +5,8 @@ package templates
 import (
 	"strconv"
 
-	"github.com/mdhender/tnrpt/web/store"
+	"github.com/mdhender/tnrpt/model"
+	store "github.com/mdhender/tnrpt/stores/sqlite"
 )
 
 type LayoutData struct {
@@ -141,7 +142,7 @@ templ LayoutWithData(title string, data LayoutData) {
 	</html>
 }
 
-templ Index(stats store.Stats, data LayoutData) {
+templ Index(stats model.Stats, data LayoutData) {
 	@LayoutWithData("Home", data) {
 		<h1>Welcome to OttoMap's TribeNet Report Server</h1>
 		<p>Select a turn report to view.</p>
